@@ -9,6 +9,9 @@
     "astro": "astro"
   },
   "dependencies": {
+    "@astrojs/netlify": "^6.2.5",
+    "@netlify/blobs": "^8.2.0",
+    "@netlify/cache": "^1.7.1",
     "astro": "^5.6.1"
   }
 }

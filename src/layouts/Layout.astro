@@ -5,18 +5,80 @@
 		<meta name="viewport" content="width=device-width" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Astro Basics</title>
+		<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600&family=Space+Mono&display=swap" rel="stylesheet">
+		<title>Netlify + Astro</title>
 	</head>
 	<body>
-		<slot />
+		<main>
+			<slot />
+		</main>
 	</body>
 </html>
 
-<style>
-	html,
+<style is:global>
+	:root {
+		--color-space: #030014;
+		--color-text: #ffffff;
+		--color-primary: #FF5EBA;
+		--color-secondary: #5E17EB;
+		--color-accent: #00FFE0;
+	}
+
+	@keyframes twinkle {
+		0%, 100% { opacity: 1; }
+		50% { opacity: 0.3; }
+	}
+
+	@keyframes float {
+		0%, 100% { transform: translateY(0); }
+		50% { transform: translateY(-10px); }
+	}
+
+	html {
+		font-family: 'Space Grotesk', system-ui, sans-serif;
+		background: var(--color-space);
+		color: var(--color-text);
+		overflow-x: hidden;
+	}
+
 	body {
 		margin: 0;
+		display: flex;
+		min-height: 100vh;
+		position: relative;
+	}
+
+	body::before {
+		content: '';
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background-image: 
+			radial-gradient(2px 2px at 20px 30px, var(--color-text), rgba(0,0,0,0)),
+			radial-gradient(2px 2px at 40px 70px, var(--color-text), rgba(0,0,0,0)),
+			radial-gradient(2px 2px at 50px 160px, var(--color-text), rgba(0,0,0,0)),
+			radial-gradient(2px 2px at 90px 40px, var(--color-text), rgba(0,0,0,0)),
+			radial-gradient(2px 2px at 130px 80px, var(--color-text), rgba(0,0,0,0)),
+			radial-gradient(2px 2px at 160px 120px, var(--color-text), rgba(0,0,0,0));
+		background-repeat: repeat;
+		background-size: 200px 200px;
+		animation: twinkle 4s infinite;
+		opacity: 0.5;
+		z-index: 0;
+	}
+
+	main {
+		max-width: 800px;
+		margin: 0 auto;
+		padding: 2rem;
 		width: 100%;
-		height: 100%;
+		position: relative;
+		z-index: 1;
+	}
+
+	* {
+		box-sizing: border-box;
 	}
 </style>

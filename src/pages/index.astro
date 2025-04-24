@@ -1,11 +1,1127 @@
 ---
-import Welcome from '../components/Welcome.astro';
 import Layout from '../layouts/Layout.astro';
-
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
 ---
 
 <Layout>
-	<Welcome />
+	<div class="container">
+		<h1 class="main-title">Netlify Cache API</h1>
+		<div class="intro-block">
+			<p class="intro-paragraph">You're embarking on a journey to somewhere far away in our galaxy. To generate your mission data, you'll need to make several HTTP calls.</p>
+			<p class="intro-paragraph">These calls must be fast so you can launch as quickly as possible.</p>
+			<p class="intro-paragraph">The <span class="cache-link"><a href="https://docs.netlify.com/platform/cache-api/" target="_blank" rel="noopener">Netlify Cache API</a></span> can help with that. Check for yourself.</p>
+		</div>
+		<div class="form wide-form-section">
+  <div class="input-wrapper fancy-input-wrapper wide-form-section" style="flex-direction:column;align-items:stretch;gap:0.7rem;">
+  <label for="location-input" class="astro-label" style="font-size:1.25rem;font-family:'Space Mono',monospace;font-weight:700;margin-bottom:0.1rem;">What's your location, astronaut?</label>
+  <div style="display:flex;align-items:center;gap:0.7rem;width:100%;">
+    <input id="location-input" class="astro-input wide-input big-coord-input" type="text" placeholder="Netlify HQ" autocomplete="off" />
+    <button type="button" id="geo-btn" class="astro-geolocate-btn small-geo-btn" title="Use my location" aria-label="Get current location">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg>
+    </button>
+    <div class="input-glow"></div>
+  </div>
+</div>
+  <div class="buttons">
+    <button id="fetch-btn" class="primary">Generate mission data</button>
+  </div>
+</div>
+		<div class="terminal">
+			<div class="terminal-header">
+				<div class="terminal-controls">
+					<span></span>
+					<span></span>
+					<span></span>
+				</div>
+				<div class="terminal-title">SHIP CONSOLE OUTPUT</div>
+			</div>
+			<div class="terminal-content">
+				<div class="terminal-lines" id="terminal-output">
+				</div>
+				<div class="terminal-cursor"></div>
+			</div>
+		</div>
+	</div>
+
+<!-- Mission Data Section -->
+<section class="mission-data-section">
+  <h2 class="mission-title">Mission data</h2>
+  <div class="mission-panels">
+    <!-- Launch Location -->
+    <div class="mission-panel">
+      <h3 class="mission-panel-title">🚀 Launch location</h3>
+      <div class="mission-panel-subtitle">Where you're launching from</div>
+      <ul class="mission-list">
+        <li><span class="mission-label">Coordinates:</span> <span class="mission-value" data-key="coordinates"></span></li>
+        <li><span class="mission-label">Distance from Netlify HQ:</span> <span class="mission-value" data-key="distance"></span></li>
+        <li><span class="mission-label">Sun rise time:</span> <span class="mission-value" data-key="sunrise"></span></li>
+        <li><span class="mission-label">Sun set time:</span> <span class="mission-value" data-key="sunset"></span></li>
+        <li><span class="mission-label">Moon phase:</span> <span class="mission-value" data-key="moonphase"></span></li>
+        <li><span class="mission-label">Weather forecast:</span> <span class="mission-value" data-key="weather"></span></li>
+      </ul>
+    </div>
+    <!-- Destination -->
+    <div class="mission-panel">
+      <h3 class="mission-panel-title">🪐 Destination</h3>
+      <div class="mission-panel-subtitle">Where you're going</div>
+      <ul class="mission-list">
+        <li><span class="mission-label">Body name:</span> <span class="mission-value" data-key="planet"></span></li>
+        <li><span class="mission-label">Volume:</span> <span class="mission-value" data-key="volume"></span></li>
+        <li><span class="mission-label">Mass:</span> <span class="mission-value" data-key="mass"></span></li>
+        <li><span class="mission-label">Gravity:</span> <span class="mission-value" data-key="gravity"></span></li>
+      </ul>
+    </div>
+    <!-- ISS Data -->
+    <div class="mission-panel">
+      <h3 class="mission-panel-title">🛰️ International Space Station data</h3>
+      <div class="mission-panel-subtitle">Maybe stop here on the way for a drink and a chat?</div>
+      <ul class="mission-list">
+        <li><span class="mission-label">Latitude:</span> <span class="mission-value" data-key="latitude"></span></li>
+        <li><span class="mission-label">Longitude:</span> <span class="mission-value" data-key="longitude"></span></li>
+        <li><span class="mission-label">Altitude:</span> <span class="mission-value" data-key="altitude"></span></li>
+        <li><span class="mission-label">Velocity:</span> <span class="mission-value" data-key="velocity"></span></li>
+      </ul>
+    </div>
+    <!-- Objects Scanned -->
+    <div class="mission-panel">
+      <h3 class="mission-panel-title">🔭 Celestial objects scanned</h3>
+      <div class="mission-panel-subtitle">There's a lot of stuff out there</div>
+      <ul class="mission-list">
+        <li><span class="mission-label">Number of planets:</span> <span class="mission-value" data-key="numplanets"></span></li>
+        <li><span class="mission-label">Number of dwarf planets:</span> <span class="mission-value" data-key="numdwarfs"></span></li>
+        <li><span class="mission-label">Number of asteroids:</span> <span class="mission-value" data-key="numasteroids"></span></li>
+        <li><span class="mission-label">Number of comets:</span> <span class="mission-value" data-key="numcomets"></span></li>
+        <li><span class="mission-label">Number of moons:</span> <span class="mission-value" data-key="nummoons"></span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+	<script>
+		import { actions } from 'astro:actions';
+
+    // Calculate distance between two lat/lon points using Haversine formula (returns meters)
+    function haversineDistance(latStr: string, lonStr: string): number {
+      const toRad = (deg: number) => deg * Math.PI / 180;
+      const R = 6371000; // Earth radius in meters
+      const lat1 = parseFloat(latStr);
+      const lon1 = parseFloat(lonStr);
+      const lat2 = 37.78288723962938;
+      const lon2 = -122.39360711746808;
+      const dLat = toRad(lat2 - lat1);
+      const dLon = toRad(lon2 - lon1);
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      return R * c;
+    }
+
+    // Mission data object
+    const missionData: Record<string, string> = {
+      coordinates: "?",
+      distance: "?",
+      sunrise: "?",
+      sunset: "?",
+      moonphase: "?",
+      weather: "?",
+      planet: "?",
+      volume: "?",
+      mass: "?",
+      gravity: "?",
+      latitude: "?",
+      longitude: "?",
+      altitude: "?",
+      velocity: "?",
+      numplanets: "?",
+      numdwarfs: "?",
+      numasteroids: "?",
+      numcomets: "?",
+      nummoons: "?"
+    };
+		
+		const fetchBtn = document.getElementById("fetch-btn") as HTMLButtonElement;
+    const terminal = document.getElementById("terminal-output");
+
+    const locationInput = document.getElementById("location-input") as HTMLInputElement;
+    const geoBtn = document.getElementById("geo-btn") as HTMLButtonElement;
+    geoBtn.addEventListener('click', () => {
+      if (!navigator.geolocation) return;
+      geoBtn.disabled = true;
+      geoBtn.innerHTML = `<span style='font-size:1rem;'>...</span>`;
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          locationInput.value = `${pos.coords.latitude}, ${pos.coords.longitude}`;
+          geoBtn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg>`;
+          geoBtn.disabled = false;
+        },
+        () => {
+          geoBtn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg>`;
+          geoBtn.disabled = false;
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+      );
+    });
+
+    function addTerminalLine(text: string, type: 'input' | 'output' | 'error' | 'break' = 'output') {
+      const line = document.createElement('div');
+      line.className = `terminal-line ${type}`;
+      line.textContent = text;
+      line.style = "min-height: 1rem"
+      terminal?.appendChild(line);
+      terminal?.scrollTo(0, terminal.scrollHeight);
+    }
+
+    fetchBtn?.addEventListener('click', async (event) => {
+			event.preventDefault();
+			let coords = locationInput.value.trim();
+			if (!coords) {
+				coords = "37.78288723962938, -122.39360711746808";
+			}
+
+			missionData.coordinates = coords;
+
+			const coordsParts = coords.split(",")
+			const lat = coordsParts[0].trim()
+			const long = coordsParts[1].trim()
+
+			const hqDistance = Math.round(haversineDistance(lat, long));
+			missionData.distance = `${hqDistance / 1000} km`;
+
+			const durations = {
+				cached: 0,
+				uncached: 0
+			};
+
+			const moonSunURL = `https://aa.usno.navy.mil/api/rstt/oneday?date=2016-12-1%20&coords=${lat},%20${long}`
+
+			addTerminalLine(`> Fetching "${moonSunURL}"...`);
+
+			const moonSun = await actions.fetch({ cache: false, url: moonSunURL });
+
+			durations.cached += moonSun.data.duration.cached
+			durations.uncached += moonSun.data.duration.uncached
+			missionData.moonphase = moonSun.data.properties.data.curphase
+
+			const sunrise = moonSun.data.properties.data.sundata.find(({phen}) => phen === "Rise")
+			const sunset = moonSun.data.properties.data.sundata.find(({phen}) => phen === "Set")
+			
+			missionData.sunrise = sunrise?.time
+			missionData.sunset = sunset?.time
+
+			addTerminalLine(`Network: ${moonSun.data.duration.uncached}ms / Cache API: ${moonSun.data.duration.cached}ms`);
+
+			const weatherURL = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${long}&current=temperature_2m,is_day,apparent_temperature`
+
+			addTerminalLine("", "break");
+			addTerminalLine(`> Fetching "${weatherURL}"...`);
+
+			const weather = await actions.fetch({ cache: false, url: weatherURL });
+
+			durations.cached += weather.data.duration.cached
+			durations.uncached += weather.data.duration.uncached
+			missionData.weather = `${weather.data.current.temperature_2m}${weather.data.current_units.temperature_2m} (feels like ${weather.data.current.apparent_temperature}${weather.data.current_units.apparent_temperature})`
+
+			addTerminalLine(`Network: ${weather.data.duration.uncached}ms / Cache API: ${weather.data.duration.cached}ms`);
+
+
+			const issURL = "https://api.wheretheiss.at/v1/satellites/25544"
+
+			addTerminalLine("", "break");
+			addTerminalLine(`> Fetching "${issURL}"...`);
+
+			const iss = await actions.fetch({ cache: false, url: issURL });
+
+			durations.cached += iss.data.duration.cached
+			durations.uncached += iss.data.duration.uncached
+
+			missionData.latitude = `${iss.data.latitude}°`
+			missionData.longitude = `${iss.data.longitude}°`
+			missionData.altitude = `${iss.data.altitude} km`
+			missionData.velocity = `${iss.data.velocity} km/s`
+
+			addTerminalLine(`Network: ${iss.data.duration.uncached}ms / Cache API: ${iss.data.duration.cached}ms`);
+
+			const knowncountURL = "https://api.le-systeme-solaire.net/rest/knowncount/"
+
+			addTerminalLine("", "break");
+			addTerminalLine(`> Fetching "${knowncountURL}"...`);
+
+			const knowncount = await actions.fetch({ cache: false, url: knowncountURL });
+
+			durations.cached += knowncount.data.duration.cached
+			durations.uncached += knowncount.data.duration.uncached
+
+			const numplanets = knowncount.data.knowncount.find((body) => body.id === "planet")
+			missionData.numplanets = numplanets?.knownCount.toString()
+
+			const numdwarfs = knowncount.data.knowncount.find((body) => body.id === "dwarfPlanet")
+			missionData.numdwarfs = numdwarfs?.knownCount.toString()
+
+			const numasteroids = knowncount.data.knowncount.find((body) => body.id === "asteroid")
+			missionData.numasteroids = numasteroids?.knownCount.toString()
+
+			const numcomets = knowncount.data.knowncount.find((body) => body.id === "comet")
+			missionData.numcomets = numcomets?.knownCount.toString()
+
+			const nummoons = knowncount.data.knowncount.find((body) => body.id === "moonsPlanet")
+			missionData.nummoons = nummoons?.knownCount.toString()
+
+			addTerminalLine(`Network: ${knowncount.data.duration.uncached}ms / Cache API: ${knowncount.data.duration.cached}ms`);
+
+			const bodiesURL = "https://api.le-systeme-solaire.net/rest/bodies/"
+
+			addTerminalLine("", "break");
+			addTerminalLine(`> Fetching "${bodiesURL}"...`);
+
+			const bodies = await actions.fetch({ cache: false, url: bodiesURL });
+
+			durations.cached += bodies.data.duration.cached
+			durations.uncached += bodies.data.duration.uncached
+
+			const candidates = bodies.data.bodies.filter(body => body.vol && body.mass && body.gravity)
+			const index = Math.floor((Math.random() * candidates.length))
+			const body = candidates[index]
+
+			missionData.planet = body.englishName
+			missionData.volume = `${body.vol.volValue} × 10<sup>${body.vol.volExponent}</sup> km³` 
+			missionData.mass = `${body.mass.massValue} × 10<sup>${body.mass.massExponent}</sup> kg` 
+			missionData.gravity = `${body.gravity} m/s`
+
+			addTerminalLine(`Network: ${bodies.data.duration.uncached}ms / Cache API: ${bodies.data.duration.cached}ms`);
+			addTerminalLine("", "break");
+			addTerminalLine("", "break");
+
+			addTerminalLine(`Without cache: ${durations.uncached}ms`, 'input');
+			addTerminalLine(`With Cache API: ${durations.cached}ms`, 'input');
+
+			await new Promise(resolve => {
+				setTimeout(resolve, 2_000)
+			})
+
+			// Smooth scroll to Mission Data section
+			const missionSection = document.querySelector('.mission-data-section');
+			if (missionSection) {
+				missionSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+			}
+
+			// Typing animation for mission data values
+			const values = Array.from(document.querySelectorAll('.mission-value'));
+			let valueDelay = 0;
+			values.forEach((el, idx) => {
+				el.innerHTML = '';
+				const key = el.getAttribute('data-key');
+				if (!key || !(key in missionData)) return;
+				const raw = missionData[key];
+				// Pre-calculate and reserve space to prevent layout shift
+				let tempSpan = document.createElement('span');
+				tempSpan.style.visibility = 'hidden';
+				tempSpan.style.position = 'absolute';
+				tempSpan.style.whiteSpace = 'pre';
+				tempSpan.style.fontFamily = 'Space Mono, monospace';
+				tempSpan.innerHTML = raw; // use full HTML for accurate width
+				document.body.appendChild(tempSpan);
+				(el as HTMLElement).style.display = 'inline-block';
+				(el as HTMLElement).style.minWidth = tempSpan.offsetWidth + 'px';
+				document.body.removeChild(tempSpan);
+				// If the value contains HTML (like <sup>), use a temp element
+				let chars: Array<{text: string, html: boolean}> = [];
+				if (raw.includes('<')) {
+					// Parse HTML string into text and tags
+					let temp = document.createElement('div');
+					temp.innerHTML = raw;
+					function walk(node: Node) {
+						if (node.nodeType === Node.TEXT_NODE) {
+							chars.push({text: node.textContent || '', html: false});
+						} else if (node.nodeType === Node.ELEMENT_NODE) {
+							chars.push({text: (node as HTMLElement).outerHTML, html: true});
+						}
+					}
+					temp.childNodes.forEach(walk);
+				} else {
+					chars = raw.split('').map((c: string) => ({text: c, html: false}));
+				}
+				let i = 0;
+				function typeChar() {
+					if (i < chars.length) {
+						if (chars[i].html) {
+							el.innerHTML += chars[i].text;
+						} else {
+							el.innerHTML += chars[i].text.replace(/ /g, '&nbsp;');
+						}
+						i++;
+						setTimeout(typeChar, 22);
+					}
+				}
+				setTimeout(typeChar, valueDelay);
+				// Stagger each value
+				valueDelay += Math.max(350, chars.length * 22 + 80);
+			});
+		});
+	</script>
 </Layout>
+
+<style>
+  .fancy-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+    justify-content: center;
+  }
+  .api-base-url {
+    font-size: 1.35rem;
+    color: var(--color-accent);
+    letter-spacing: 0.02em;
+    font-family: 'Space Mono', monospace;
+    padding-right: 0.2em;
+    text-shadow: 0 0 8px var(--color-accent), 0 0 2px #fff;
+  }
+  .astro-select {
+    appearance: none;
+    background: linear-gradient(90deg, var(--color-primary) 60%, var(--color-accent) 100%);
+    color: var(--color-text);
+    padding: 0.7rem 2.8rem 0.7rem 0.8rem; /* Add more right padding for arrow */
+    border: 2px solid var(--color-accent);
+    border-radius: 16px;
+    font-size: 1.25rem;
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    box-shadow: 0 0 20px 0 rgba(0,255,224,0.25), 0 0 0 4px rgba(255,255,255,0.08) inset;
+    outline: none;
+    transition: border 0.2s, box-shadow 0.2s;
+    min-width: 6.5ch;
+    width: 6.5ch;
+    cursor: pointer;
+    position: relative;
+    z-index: 1;
+    background-clip: padding-box;
+  }
+  .wide-select {
+    width: 100%;
+    min-width: 340px;
+    max-width: 100%;
+    display: block;
+    /* Hide default arrow in most browsers */
+    background-image: none;
+  }
+  .select-arrow-wrapper {
+    position: relative;
+  }
+  .select-arrow {
+    pointer-events: none;
+    position: absolute;
+    right: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1.2em;
+    height: 1.2em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+  }
+  .select-arrow::before {
+    content: '';
+    display: block;
+    width: 0;
+    height: 0;
+    border-left: 0.45em solid transparent;
+    border-right: 0.45em solid transparent;
+    border-top: 0.6em solid #fff;
+    filter: drop-shadow(0 0 2px var(--color-accent));
+  }
+
+  .wide-select option:first-child {
+    font-size: 1.05rem;
+    color: #bbb;
+  }
+  .astro-select:focus {
+    border-color: #fff;
+    box-shadow: 0 0 30px 0 var(--color-accent), 0 0 0 6px rgba(0,255,224,0.25) inset;
+  }
+  .astro-select::-ms-expand {
+    display: none;
+  }
+  .astro-select option {
+    background: #1c1f2a;
+    color: var(--color-text);
+    font-size: 1.1rem;
+  }
+  /* Custom dropdown arrow */
+  .astro-select {
+    background-image:
+      linear-gradient(90deg, var(--color-primary) 60%, var(--color-accent) 100%),
+      url('data:image/svg+xml;utf8,<svg fill="%23B4F5E0" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+    background-repeat: no-repeat, no-repeat;
+    background-position: right 0 center, right 0.75rem center;
+    background-size: 100% 100%, 1.5rem 1.5rem;
+  }
+  .astro-radio-group {
+    display: flex;
+    gap: 2.5rem;
+    justify-content: center;
+    margin-bottom: 1.2rem;
+  }
+  .astro-radio-label {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+    font-size: 0.89rem;
+    font-family: 'Space Mono', monospace;
+    color: var(--color-accent);
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    position: relative;
+    padding: 0.08em 0.4em;
+    border-radius: 8px;
+    background: rgba(0,255,224,0.025);
+    box-shadow: 0 0 4px 0 rgba(0,255,224,0.04);
+    transition: background 0.2s, box-shadow 0.2s;
+  }
+
+  button:not(:disabled):hover {
+    transform: translateY(-2px);
+    background: var(--color-secondary);
+    box-shadow: 0 0 20px rgba(94, 23, 235, 0.4);
+  }
+
+  button.primary {
+    background: rgba(255, 94, 186, 0.1);
+    border-color: var(--color-primary);
+  }
+
+  .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3rem;
+    padding: 2rem 0;
+    width: 100%;
+  }
+
+  .cosmic-section {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .orbit {
+    position: relative;
+    width: 300px;
+    height: 300px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    animation: float 6s ease-in-out infinite;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .orbit::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 320px;
+    height: 320px;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--color-accent) 0%, rgba(0,255,224,0) 70%);
+    transform: translate(-50%, -50%);
+    opacity: 0.1;
+    filter: blur(20px);
+  }
+  .astro-radio:focus {
+    border-color: #fff;
+    box-shadow: 0 0 30px 0 var(--color-accent), 0 0 0 6px rgba(0,255,224,0.18) inset;
+  }
+  .astro-radio + span {
+    font-size: 0.89rem;
+    color: var(--color-accent);
+    font-family: 'Space Mono', monospace;
+    font-weight: 500;
+    text-shadow: 0 0 3px var(--color-accent), 0 0 1px #fff;
+  }
+
+	.container {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 3rem;
+		padding: 2rem 0;
+		width: 100%;
+	}
+
+	.cosmic-section {
+		position: relative;
+		width: 100%;
+		height: 200px;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+
+	.orbit {
+		position: relative;
+		width: 300px;
+		height: 300px;
+		border: 2px solid rgba(255, 255, 255, 0.1);
+		border-radius: 50%;
+		animation: float 6s ease-in-out infinite;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+
+	.orbit::before {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		width: 320px;
+		height: 320px;
+		border-radius: 50%;
+		background: radial-gradient(circle, var(--color-accent) 0%, rgba(0,255,224,0) 70%);
+		transform: translate(-50%, -50%);
+		opacity: 0.1;
+		filter: blur(20px);
+	}
+
+	.logos {
+		display: flex;
+		align-items: center;
+		gap: 2rem;
+		position: relative;
+	}
+
+	.connector {
+		width: 60px;
+		height: 2px;
+		background: linear-gradient(to right, var(--color-primary), var(--color-accent));
+		position: relative;
+	}
+
+	.connector::before, .connector::after {
+		content: '';
+		position: absolute;
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
+		background: var(--color-accent);
+		top: 50%;
+		transform: translateY(-50%);
+		animation: twinkle 2s infinite;
+	}
+
+	.connector::before { left: -3px; }
+	.connector::after { right: -3px; }
+
+	.logo {
+		width: 100px;
+		height: 100px;
+		object-fit: contain;
+		transition: transform 0.3s ease;
+	}
+
+	.logo:hover {
+		transform: scale(1.1);
+	}
+
+	.plus {
+		font-size: 3rem;
+		font-weight: 600;
+		color: var(--color-accent);
+		text-shadow: 0 0 10px var(--color-accent);
+		animation: twinkle 3s infinite;
+	}
+
+	h1 {
+		font-size: 4rem;
+		margin: 0;
+		background: linear-gradient(to right, var(--color-primary), var(--color-accent));
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		text-align: center;
+		text-shadow: 0 0 20px rgba(255, 94, 186, 0.3);
+	}
+
+	.form {
+		display: flex;
+		flex-direction: column;
+		gap: 1.5rem;
+		width: 100%;
+		max-width: 500px;
+	}
+
+	.input-wrapper {
+		position: relative;
+	}
+
+	.input-glow {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background: var(--color-primary);
+		opacity: 0.2;
+		filter: blur(20px);
+		border-radius: 12px;
+		z-index: -1;
+	}
+
+	input {
+		padding: 1.2rem;
+		border: 2px solid var(--color-primary);
+		border-radius: 12px;
+		background: rgba(255, 94, 186, 0.1);
+		color: var(--color-text);
+		font-size: 1.1rem;
+		font-family: inherit;
+		width: 100%;
+		transition: all 0.3s ease;
+		box-shadow: 0 0 20px rgba(255, 94, 186, 0.2);
+	}
+
+	input:focus {
+		outline: none;
+		border-color: var(--color-accent);
+		box-shadow: 0 0 30px rgba(0, 255, 224, 0.3);
+	}
+
+	input::placeholder {
+		color: rgba(255, 255, 255, 0.5);
+	}
+
+	.buttons {
+		display: flex;
+		gap: 1rem;
+		flex-wrap: wrap;
+	}
+
+	button {
+		padding: 1rem 1.5rem;
+		border: 2px solid var(--color-secondary);
+		border-radius: 12px;
+		background: rgba(94, 23, 235, 0.1);
+		color: var(--color-text);
+		font-family: inherit;
+		font-size: 1rem;
+		cursor: pointer;
+		transition: all 0.3s ease;
+		flex: 1;
+		min-width: 200px;
+		position: relative;
+	}
+
+	button:not(:disabled):hover {
+		transform: translateY(-2px);
+		background: var(--color-secondary);
+		box-shadow: 0 0 20px rgba(94, 23, 235, 0.4);
+	}
+
+	button.primary {
+		background: rgba(255, 94, 186, 0.1);
+		border-color: var(--color-primary);
+	}
+
+	button.primary:not(:disabled):hover {
+		background: var(--color-primary);
+		box-shadow: 0 0 20px rgba(255, 94, 186, 0.4);
+	}
+	.terminal {
+		width: 100%;
+		margin-top: 50px;
+		max-width: 600px;
+		background: rgba(0, 0, 0, 0.7);
+		border-radius: 12px;
+		border: 1px solid var(--color-accent);
+		overflow: hidden;
+		box-shadow: 0 0 30px rgba(0, 255, 224, 0.2);
+	}
+
+	.terminal-header {
+		background: rgba(0, 255, 224, 0.1);
+		padding: 0.75rem;
+		display: flex;
+		align-items: center;
+		border-bottom: 1px solid var(--color-accent);
+	}
+
+	.terminal-controls {
+		display: flex;
+		gap: 0.5rem;
+		margin-right: 1rem;
+	}
+
+	.terminal-controls span {
+		width: 12px;
+		height: 12px;
+		border-radius: 50%;
+		background: var(--color-accent);
+		opacity: 0.5;
+	}
+
+	.terminal-title {
+		color: var(--color-accent);
+		font-size: 0.875rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+	}
+
+	.terminal-content {
+		padding: 1rem;
+		position: relative;
+		min-height: 150px;
+		max-height: 300px;
+	}
+
+	.terminal-lines {
+		max-height: 250px;
+		overflow-y: auto;
+		font-family: 'Space Mono', monospace;
+		font-size: 0.9rem;
+		line-height: 1.5;
+	}
+
+	.terminal-line {
+		min-height: 1rem;
+		margin-bottom: 0.5rem;
+		color: #B4F5E0;
+		white-space: pre-wrap;
+	}
+	.terminal-lines .terminal-line.input {
+	color: var(--color-accent) !important;
+}
+
+	.terminal-line.error {
+		color: #FF6B6B;
+	}
+
+	.terminal-line.break {
+		min-height: 1rem;
+	}
+
+	.terminal-cursor {
+		bottom: 1rem;
+		width: 8px;
+		height: 16px;
+		background: var(--color-accent);
+		animation: blink 1s infinite;
+	}
+
+	@keyframes blink {
+		0%, 100% { opacity: 1; }
+		50% { opacity: 0; }
+	}
+	.intro-block {
+		max-width: 600px;
+		width: 100%;
+		margin: 0 auto 2.2rem auto;
+		display: flex;
+		flex-direction: column;
+		gap: 1.2rem;
+		background: linear-gradient(120deg, #131726 85%, rgba(0,255,224,0.10) 100%);
+		border: 2.5px solid var(--color-accent);
+		border-radius: 18px;
+		box-shadow: 0 0 60px 0 rgba(0,255,224,0.18), 0 0 0 6px rgba(85,255,224,0.12) inset, 0 0 24px 0 #0e1120 inset;
+		padding: 2.1rem 2rem 2.1rem 2rem;
+		align-items: center;
+		opacity: 0.99;
+		position: relative;
+		/* Subtle star background effect */
+		overflow: hidden;
+	}
+	.intro-block::before {
+		content: "";
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		background: repeating-radial-gradient(circle at 80% 20%, #55ffe020 1px, transparent 2px, transparent 30px),
+			repeating-radial-gradient(circle at 20% 80%, #fff2 1px, transparent 2px, transparent 40px);
+		z-index: 0;
+	}
+	.intro-paragraph {
+		max-width: 600px;
+		width: 100%;
+		font-family: 'Space Mono', monospace;
+		font-size: 1.15rem;
+		color: #b4f5e0;
+		margin-bottom: 0.2em;
+		margin-top: 0;
+		text-shadow: 0 0 10px #55ffe0, 0 0 2px #fff;
+		line-height: 1.7;
+		z-index: 1;
+		background: transparent;
+	}
+	.cache-link a {
+		color: var(--color-accent);
+		text-decoration: underline;
+		font-weight: 900;
+		text-shadow: 0 0 12px var(--color-accent), 0 0 2px #fff;
+		transition: color 0.2s, text-shadow 0.2s;
+		letter-spacing: 0.02em;
+	}
+	.cache-link a:hover {
+		color: #fff;
+		text-shadow: 0 0 24px var(--color-accent), 0 0 4px #fff;
+	}
+	.mission-data-section {
+		margin: 3.5rem auto 2rem auto;
+		width: 600px;
+		max-width: 95vw;
+		box-sizing: border-box;
+		background: linear-gradient(110deg, #181c24 80%, rgba(0,255,224,0.08) 100%);
+		border: 2.5px solid var(--color-accent);
+		border-radius: 18px;
+		box-shadow: 0 0 40px 0 rgba(0,255,224,0.11), 0 0 0 4px rgba(255,255,255,0.07) inset;
+		padding: 2rem 1.3rem 2rem 1.3rem;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		opacity: 0.98;
+	}
+	.wide-form-section {
+		width: 600px;
+		max-width: 95vw;
+		box-sizing: border-box;
+		margin-left: auto;
+		margin-right: auto;
+		display: flex;
+		flex-direction: column;
+	}
+	.form.wide-form-section {
+		width: 600px;
+		max-width: 95vw;
+		box-sizing: border-box;
+		margin-left: auto;
+		margin-right: auto;
+		display: flex;
+		flex-direction: column;
+	}
+	.input-wrapper.fancy-input-wrapper {
+		width: 100%;
+	}
+	.buttons {
+		width: 100%;
+		display: flex;
+		justify-content: flex-end;
+	}
+	.input-wrapper.fancy-input-wrapper > div[style*='width:100%'] {
+		width: auto !important;
+		flex: 1 1 0%;
+		min-width: 0;
+	}
+	.mission-title {
+		font-family: 'Space Mono', monospace;
+		font-size: 2.1rem;
+		font-weight: 800;
+		color: var(--color-accent);
+		letter-spacing: 0.08em;
+		margin-bottom: 2.1rem;
+		text-shadow: 0 0 12px var(--color-accent), 0 0 2px #fff;
+		text-align: center;
+	}
+	.mission-panels {
+		display: flex;
+		flex-direction: column;
+		gap: 1.7rem;
+		width: 100%;
+		align-items: center;
+	}
+	.mission-panel {
+		background: rgba(28,31,42,0.97);
+		border-radius: 14px;
+		/* No border for inner panels */
+		box-shadow: 0 0 18px 0 rgba(0,255,224,0.09), 0 0 0 2px rgba(255,255,255,0.04) inset;
+		width: 98%;
+		min-width: 0;
+		max-width: 100%;
+		padding: 1.3rem 1.1rem 1.2rem 1.1rem;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+	}
+	@media (max-width: 950px) {
+		.mission-data-section {
+			width: 100%;
+			max-width: 100vw;
+			padding-left: 0.5rem;
+			padding-right: 0.5rem;
+		}
+		.mission-panels {
+			gap: 1.2rem;
+		}
+		.mission-panel {
+			width: 100%;
+			min-width: 0;
+			max-width: 100%;
+		}
+	}
+	.mission-panel-title {
+		font-family: 'Space Mono', monospace;
+		font-size: 1.18rem;
+		font-weight: 700;
+		color: var(--color-primary);
+		margin-bottom: 0.45rem;
+		letter-spacing: 0.05em;
+		text-shadow: 0 0 4px var(--color-primary), 0 0 1px #fff;
+		display: flex;
+		align-items: center;
+		gap: 0.45em;
+	}
+	.mission-panel-subtitle {
+		font-family: 'Space Mono', monospace;
+		font-size: 0.98rem;
+		font-style: italic;
+		color: #55ffe0;
+		text-shadow: 0 0 6px #55ffe0, 0 0 1px #fff;
+		margin-bottom: 1.1rem;
+		margin-top: -0.15rem;
+		padding-bottom: 0.2rem;
+		letter-spacing: 0.04em;
+		opacity: 0.97;
+	}
+	.mission-list {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		width: 100%;
+	}
+.input-wrapper.fancy-input-wrapper {
+  width: 100%;
+}
+.buttons {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+}
+.input-wrapper.fancy-input-wrapper > div[style*='width:100%'] {
+  width: auto !important;
+  flex: 1 1 0%;
+  min-width: 0;
+}
+.mission-title {
+  font-family: 'Space Mono', monospace;
+  font-size: 2.1rem;
+  font-weight: 800;
+  color: var(--color-accent);
+  letter-spacing: 0.08em;
+  margin-bottom: 2.1rem;
+  text-shadow: 0 0 12px var(--color-accent), 0 0 2px #fff;
+  text-align: center;
+}
+.mission-panels {
+  display: flex;
+  flex-direction: column;
+  gap: 1.7rem;
+  width: 100%;
+  align-items: center;
+}
+.mission-panel {
+  background: rgba(28,31,42,0.97);
+  border-radius: 14px;
+  /* No border for inner panels */
+  box-shadow: 0 0 18px 0 rgba(0,255,224,0.09), 0 0 0 2px rgba(255,255,255,0.04) inset;
+  width: 98%;
+  min-width: 0;
+  max-width: 100%;
+  padding: 1.3rem 1.1rem 1.2rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+@media (max-width: 950px) {
+  .mission-data-section {
+    width: 100%;
+    max-width: 100vw;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+  .mission-panels {
+    gap: 1.2rem;
+  }
+  .mission-panel {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+.mission-panel-title {
+  font-family: 'Space Mono', monospace;
+  font-size: 1.18rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin-bottom: 0.45rem;
+  letter-spacing: 0.05em;
+  text-shadow: 0 0 4px var(--color-primary), 0 0 1px #fff;
+  display: flex;
+  align-items: center;
+  gap: 0.45em;
+}
+.mission-panel-subtitle {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.98rem;
+  font-style: italic;
+  color: #55ffe0;
+  text-shadow: 0 0 6px #55ffe0, 0 0 1px #fff;
+  margin-bottom: 1.1rem;
+  margin-top: -0.15rem;
+  padding-bottom: 0.2rem;
+  letter-spacing: 0.04em;
+  opacity: 0.97;
+}
+.mission-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+}
+
+.mission-list li {
+	min-height: 28px;
+}
+
+.mission-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 1.01rem;
+  font-weight: 600;
+  color: var(--color-accent);
+  letter-spacing: 0.03em;
+}
+.mission-value {
+  font-family: 'Space Mono', monospace;
+  font-size: 1.01rem;
+  font-weight: 400;
+  color: #fff;
+  letter-spacing: 0.02em;
+  margin-left: 0.5em;
+  word-break: break-word;
+  display: inline-block;
+  min-width: 2ch; /* fallback for animation */
+  vertical-align: baseline;
+}
+.mission-panel ul li {
+  margin-bottom: 0.7em;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+}
+.mission-panel ul li:last-child {
+  margin-bottom: 0;
+}
+@media (max-width: 950px) {
+  .mission-panels {
+    flex-direction: column;
+    gap: 2.2rem;
+    align-items: center;
+  }
+  .mission-panel {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
