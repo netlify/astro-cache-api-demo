@@ -1,0 +1,234 @@
+---
+---
+<div class="header-container">
+  <svg class="solar-system" viewBox="0 0 800 300" xmlns="http://www.w3.org/2000/svg">
+    <!-- Background stars -->
+    <g class="stars">
+      {Array.from({ length: 40 }).map((_, i) => (
+        <circle 
+          cx={Math.random() * 800} 
+          cy={Math.random() * 300} 
+          r={Math.random() * 0.8 + 0.2} 
+          fill="white" 
+          class={`star star-${i}`}
+        />
+      ))}
+    </g>
+
+    <!-- Orbits -->
+    <g class="orbits" stroke-width="0.5" stroke-opacity="0.3">
+      <circle cx="400" cy="150" r="35" stroke="#E5E5E5" fill="none" /> <!-- Mercury -->
+      <circle cx="400" cy="150" r="50" stroke="#FFB366" fill="none" /> <!-- Venus -->
+      <circle cx="400" cy="150" r="65" stroke="#66B3FF" fill="none" /> <!-- Earth -->
+      <circle cx="400" cy="150" r="80" stroke="#FF6666" fill="none" /> <!-- Mars -->
+      <circle cx="400" cy="150" r="100" stroke="#FFD700" fill="none" /> <!-- Jupiter -->
+      <circle cx="400" cy="150" r="120" stroke="#E4A154" fill="none" /> <!-- Saturn -->
+      <circle cx="400" cy="150" r="140" stroke="#66FFE6" fill="none" /> <!-- Uranus -->
+      <circle cx="400" cy="150" r="160" stroke="#3366FF" fill="none" /> <!-- Neptune -->
+    </g>
+
+    <!-- Sun -->
+    <g class="celestial-body sun-group">
+      <title>Sun ☀️
+No puppies here (too hot!)</title>
+      <circle cx="400" cy="150" r="15" fill="#FDB813" class="sun">
+        <animate attributeName="opacity" values="0.85;1;0.85" dur="3s" repeatCount="indefinite" />
+        <animate attributeName="r" values="15;15.5;15" dur="3s" repeatCount="indefinite" />
+      </circle>
+    </g>
+
+    <!-- Planets -->
+    <g class="planets">
+      <!-- Mercury -->
+      <g class="celestial-body mercury-group">
+        <title>Mercury ☿
+No puppies here (too hot!)</title>
+        <circle cx="435" cy="150" r="2" fill="#E5E5E5" class="planet mercury">
+        <animateTransform
+          attributeName="transform"
+          type="rotate"
+          from="0 400 150"
+          to="360 400 150"
+          dur="8s"
+          repeatCount="indefinite"
+        />
+      </circle>
+
+      <!-- Venus -->
+      <g class="celestial-body venus-group">
+        <title>Venus ♀
+No puppies here (too hot!)</title>
+        <circle cx="450" cy="150" r="3.5" fill="#FFB366" class="planet venus">
+        <animateTransform
+          attributeName="transform"
+          type="rotate"
+          from="45 400 150"
+          to="405 400 150"
+          dur="12s"
+          repeatCount="indefinite"
+        />
+      </circle>
+
+      <!-- Earth -->
+      <g class="celestial-body earth-group">
+        <title>Earth 🌍
+YES! Lots of puppies here! 🐕</title>
+        <circle cx="465" cy="150" r="4" fill="#66B3FF" class="planet earth">
+        <animateTransform
+          attributeName="transform"
+          type="rotate"
+          from="90 400 150"
+          to="450 400 150"
+          dur="15s"
+          repeatCount="indefinite"
+        />
+      </circle>
+
+      <!-- Mars -->
+      <g class="celestial-body mars-group">
+        <title>Mars ♂
+No puppies here (yet!)</title>
+        <circle cx="480" cy="150" r="3" fill="#FF6666" class="planet mars">
+        <animateTransform
+          attributeName="transform"
+          type="rotate"
+          from="135 400 150"
+          to="495 400 150"
+          dur="18s"
+          repeatCount="indefinite"
+        />
+      </circle>
+
+      <!-- Jupiter -->
+      <g class="celestial-body jupiter-group">
+        <title>Jupiter ♃
+No puppies here (gas giant)</title>
+        <circle cx="500" cy="150" r="8" fill="#FFD700" class="planet jupiter">
+        <animateTransform
+          attributeName="transform"
+          type="rotate"
+          from="180 400 150"
+          to="540 400 150"
+          dur="25s"
+          repeatCount="indefinite"
+        />
+      </circle>
+
+      <!-- Saturn with rings -->
+      <g class="celestial-body saturn-group">
+        <title>Saturn ♄
+No puppies here (gas giant)</title>
+        <g class="planet saturn" transform="translate(520, 150)">
+        <animateTransform
+          attributeName="transform"
+          type="rotate"
+          from="225 400 150"
+          to="585 400 150"
+          dur="30s"
+          repeatCount="indefinite"
+        />
+        <circle cx="0" cy="0" r="6" fill="#E4A154" />
+        <ellipse cx="0" cy="0" rx="10" ry="2" transform="rotate(-20)" fill="#B88A44" opacity="0.9" />
+        <ellipse cx="0" cy="0" rx="10" ry="2" transform="rotate(-20)" stroke="#D4A65F" stroke-width="0.5" fill="none" />
+      </g>
+
+      <!-- Uranus -->
+      <g class="celestial-body uranus-group">
+        <title>Uranus ⛢
+No puppies here (too cold!)</title>
+        <circle cx="540" cy="150" r="5" fill="#66FFE6" class="planet uranus">
+        <animateTransform
+          attributeName="transform"
+          type="rotate"
+          from="270 400 150"
+          to="630 400 150"
+          dur="35s"
+          repeatCount="indefinite"
+        />
+      </circle>
+
+      <!-- Neptune -->
+      <g class="celestial-body neptune-group">
+        <title>Neptune ♆
+No puppies here (too cold!)</title>
+        <circle cx="560" cy="150" r="5" fill="#3366FF" class="planet neptune">
+        <animateTransform
+          attributeName="transform"
+          type="rotate"
+          from="315 400 150"
+          to="675 400 150"
+          dur="40s"
+          repeatCount="indefinite"
+        />
+      </circle>
+    </g>
+  </svg>
+</div>
+
+<style>
+  .header-container {
+    width: 100%;
+    height: 300px;
+    position: relative;
+  }
+
+  .solar-system {
+    width: 100%;
+    height: 100%;
+  }
+
+  .star {
+    animation: twinkle 4s infinite;
+  }
+
+  .star:nth-child(odd) {
+    animation-delay: 2s;
+  }
+
+  /* Pause all animations on hover */
+  .header-container:hover .planet,
+  .header-container:hover .sun,
+  .header-container:hover .star,
+  .header-container:hover animateTransform,
+  .header-container:hover animate {
+    animation-play-state: paused !important;
+  }
+
+  /* Celestial body hover effects */
+  .celestial-body {
+    cursor: help;
+  }
+
+  .celestial-body:hover {
+    filter: brightness(1.3) drop-shadow(0 0 5px currentColor);
+  }
+
+  /* Make sure tooltips are visible */
+  title {
+    pointer-events: none;
+  }
+
+  @keyframes twinkle {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* Make orbits more visible on hover */
+  .orbits circle {
+    transition: stroke-opacity 0.3s ease;
+  }
+
+  .header-container:hover .orbits circle {
+    stroke-opacity: 0.6;
+  }
+
+  /* Add glow effect to the sun */
+  .sun {
+    filter: drop-shadow(0 0 10px var(--color-accent));
+  }
+
+  /* Add glow effect to planets */
+  .planet {
+    filter: drop-shadow(0 0 3px currentColor);
+  }
+</style>

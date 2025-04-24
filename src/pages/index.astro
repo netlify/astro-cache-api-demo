@@ -1,8 +1,10 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import AnimatedHeader from '../components/AnimatedHeader.astro';
 ---
 
 <Layout>
+	<AnimatedHeader />
 	<div class="container">
 		<h1 class="main-title">Netlify Cache API</h1>
 		<div class="intro-block">
@@ -399,11 +401,17 @@ import Layout from '../layouts/Layout.astro';
 		});
 	</script>
   <footer style="text-align: center; padding: 2rem 0; font-family: 'Space Mono', monospace; color: var(--color-accent); font-size: 0.9rem;">
-    Vibe-coded with <a href="https://windsurf.com/" target="_blank" rel="noopener" style="color: var(--color-primary);">Windsurf</a>. Built on <a href="https://astro.build/" target="_blank" rel="noopener" style="color: var(--color-primary);">Astro</a>. Source code available <a href="https://github.com/netlify/astro-cache-api-demo" target="_blank" rel="noopener" style="color: var(--color-primary);">here</a>.
+    Vibe-coded on <a href="https://astro.build/" target="_blank" rel="noopener" style="color: var(--color-primary);">Astro</a> with <a href="https://windsurf.com/" target="_blank" rel="noopener" style="color: var(--color-primary);">Windsurf</a>
+		<a class="dtn" href="https://app.netlify.com/start/deploy?repository=https://github.com/netlify/astro-cache-api-demo"><img src="https://www.netlify.com/img/deploy/button.svg" alt="Deploy to Netlify"></a>
   </footer>
 </Layout>
 
 <style is:global>
+	.dtn {
+		display: block;
+		margin-top: 30px;
+	}
+
   .fancy-input-wrapper {
     display: flex;
     align-items: center;
