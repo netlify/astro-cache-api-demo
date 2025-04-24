@@ -6,9 +6,11 @@ import Layout from '../layouts/Layout.astro';
 	<div class="container">
 		<h1 class="main-title">Netlify Cache API</h1>
 		<div class="intro-block">
-			<p class="intro-paragraph">You're embarking on a journey to somewhere far away in our galaxy. To generate your mission data, you'll need to make several HTTP calls.</p>
-			<p class="intro-paragraph">These calls must be fast so you can launch as quickly as possible.</p>
-			<p class="intro-paragraph">The <span class="cache-link"><a href="https://docs.netlify.com/platform/cache-api/" target="_blank" rel="noopener">Netlify Cache API</a></span> can help with that. Check for yourself.</p>
+			<p class="intro-paragraph">You're embarking on a journey to the depths of our galaxy.</p>
+			<p class="intro-paragraph">We'll generate your mission data from several HTTP calls. The faster we make these calls, the sooner you're off to space.</p>
+			<p class="intro-paragraph">The <span class="cache-link"><a href="https://docs.netlify.com/platform/cache-api/" target="_blank" rel="noopener">Netlify Cache API</a></span> can help with that.</p>
+			<p class="intro-paragraph">We'll show you the different HTTP calls being made and how long they take — with and without the cache.</p>
+			<p class="intro-paragraph">Godspeed!</p>
 		</div>
 		<div class="form wide-form-section">
   <div class="input-wrapper fancy-input-wrapper wide-form-section" style="flex-direction:column;align-items:stretch;gap:0.7rem;">
@@ -25,7 +27,7 @@ import Layout from '../layouts/Layout.astro';
     <button id="fetch-btn" class="primary">Generate mission data</button>
   </div>
 </div>
-		<div class="terminal">
+		<div id="ship-console" class="terminal">
 			<div class="terminal-header">
 				<div class="terminal-controls">
 					<span></span>
@@ -36,6 +38,7 @@ import Layout from '../layouts/Layout.astro';
 			</div>
 			<div class="terminal-content">
 				<div class="terminal-lines" id="terminal-output">
+					<div class="terminal-line">Select your location by pressing the blue button, or leave blank to launch from the Netlify HQ.</div>
 				</div>
 				<div class="terminal-cursor"></div>
 			</div>
@@ -48,15 +51,16 @@ import Layout from '../layouts/Layout.astro';
   <div class="mission-panels">
     <!-- Launch Location -->
     <div class="mission-panel">
-      <h3 class="mission-panel-title">🚀 Launch location</h3>
+      <h3 class="mission-panel-title">🚀 Launchpad</h3>
       <div class="mission-panel-subtitle">Where you're launching from</div>
       <ul class="mission-list">
-        <li><span class="mission-label">Coordinates:</span> <span class="mission-value" data-key="coordinates"></span></li>
+        <li><span class="mission-label">Latitude:</span> <span class="mission-value" data-key="launchlatitude"></span></li>
+				<li><span class="mission-label">Longitude:</span> <span class="mission-value" data-key="launchlongitude"></span></li>
         <li><span class="mission-label">Distance from Netlify HQ:</span> <span class="mission-value" data-key="distance"></span></li>
         <li><span class="mission-label">Sun rise time:</span> <span class="mission-value" data-key="sunrise"></span></li>
         <li><span class="mission-label">Sun set time:</span> <span class="mission-value" data-key="sunset"></span></li>
         <li><span class="mission-label">Moon phase:</span> <span class="mission-value" data-key="moonphase"></span></li>
-        <li><span class="mission-label">Weather forecast:</span> <span class="mission-value" data-key="weather"></span></li>
+        <li><span class="mission-label">Temperature:</span> <span class="mission-value" data-key="weather"></span></li>
       </ul>
     </div>
     <!-- Destination -->
@@ -68,12 +72,14 @@ import Layout from '../layouts/Layout.astro';
         <li><span class="mission-label">Volume:</span> <span class="mission-value" data-key="volume"></span></li>
         <li><span class="mission-label">Mass:</span> <span class="mission-value" data-key="mass"></span></li>
         <li><span class="mission-label">Gravity:</span> <span class="mission-value" data-key="gravity"></span></li>
+				<li><span class="mission-label">Density:</span> <span class="mission-value" data-key="density"></span></li>
+				<li><span class="mission-label">Escape velocity:</span> <span class="mission-value" data-key="escape"></span></li>
       </ul>
     </div>
     <!-- ISS Data -->
     <div class="mission-panel">
-      <h3 class="mission-panel-title">🛰️ International Space Station data</h3>
-      <div class="mission-panel-subtitle">Maybe stop here on the way for a drink and a chat?</div>
+      <h3 class="mission-panel-title">🛰️ International Space Station</h3>
+      <div class="mission-panel-subtitle">Maybe stop there on the way?</div>
       <ul class="mission-list">
         <li><span class="mission-label">Latitude:</span> <span class="mission-value" data-key="latitude"></span></li>
         <li><span class="mission-label">Longitude:</span> <span class="mission-value" data-key="longitude"></span></li>
@@ -83,7 +89,7 @@ import Layout from '../layouts/Layout.astro';
     </div>
     <!-- Objects Scanned -->
     <div class="mission-panel">
-      <h3 class="mission-panel-title">🔭 Celestial objects scanned</h3>
+      <h3 class="mission-panel-title">🔭 Celestial objects</h3>
       <div class="mission-panel-subtitle">There's a lot of stuff out there</div>
       <ul class="mission-list">
         <li><span class="mission-label">Number of planets:</span> <span class="mission-value" data-key="numplanets"></span></li>
@@ -118,7 +124,8 @@ import Layout from '../layouts/Layout.astro';
 
     // Mission data object
     const missionData: Record<string, string> = {
-      coordinates: "?",
+      launchlatitude: "?",
+			launchlongitude: "?",
       distance: "?",
       sunrise: "?",
       sunset: "?",
@@ -128,6 +135,8 @@ import Layout from '../layouts/Layout.astro';
       volume: "?",
       mass: "?",
       gravity: "?",
+			density: "?",
+			escape: "?",
       latitude: "?",
       longitude: "?",
       altitude: "?",
@@ -144,17 +153,37 @@ import Layout from '../layouts/Layout.astro';
 
     const locationInput = document.getElementById("location-input") as HTMLInputElement;
     const geoBtn = document.getElementById("geo-btn") as HTMLButtonElement;
+
+		let userCoordinates: {latitude: number, longitude: number} | undefined
+		const netlifyCoordinates = {
+			latitude: 37.78288723962938,
+			longitude: -122.39360711746808
+		}
+
     geoBtn.addEventListener('click', () => {
-      if (!navigator.geolocation) return;
+      if (!navigator.geolocation) {
+				addTerminalLine(`> Could not get your location. Launching from Netlify HQ...`);
+
+				return;
+			}
+
+			addTerminalLine(`> Trying to get your location...`);
+
       geoBtn.disabled = true;
       geoBtn.innerHTML = `<span style='font-size:1rem;'>...</span>`;
       navigator.geolocation.getCurrentPosition(
         (pos) => {
+					addTerminalLine(`Location retrieved. Click on "Generate mission data" to launch.`);
+
+					userCoordinates = pos.coords
+
           locationInput.value = `${pos.coords.latitude}, ${pos.coords.longitude}`;
           geoBtn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg>`;
           geoBtn.disabled = false;
         },
         () => {
+					addTerminalLine(`Could not get your location. Click on "Generate mission data" to launch from Netlify HQ.`);
+
           geoBtn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg>`;
           geoBtn.disabled = false;
         },
@@ -162,7 +191,7 @@ import Layout from '../layouts/Layout.astro';
       );
     });
 
-    function addTerminalLine(text: string, type: 'input' | 'output' | 'error' | 'break' = 'output') {
+    function addTerminalLine(text: string, type: 'text' | 'input' | 'output' | 'error' | 'break' = 'text') {
       const line = document.createElement('div');
       line.className = `terminal-line ${type}`;
       line.textContent = text;
@@ -171,18 +200,17 @@ import Layout from '../layouts/Layout.astro';
       terminal?.scrollTo(0, terminal.scrollHeight);
     }
 
-    fetchBtn?.addEventListener('click', async (event) => {
-			event.preventDefault();
-			let coords = locationInput.value.trim();
-			if (!coords) {
-				coords = "37.78288723962938, -122.39360711746808";
+		async function generateMissionData() {
+			if (!userCoordinates) {
+				addTerminalLine(`Launch location set to Netlify HQ.`, 'text');
 			}
 
-			missionData.coordinates = coords;
+			const coords = userCoordinates || netlifyCoordinates
 
-			const coordsParts = coords.split(",")
-			const lat = coordsParts[0].trim()
-			const long = coordsParts[1].trim()
+			missionData.launchlatitude = `${coords.latitude}°`
+			missionData.launchlongitude = `${coords.longitude}°`
+
+			const {latitude: lat, longitude: long} = coords
 
 			const hqDistance = Math.round(haversineDistance(lat, long));
 			missionData.distance = `${hqDistance / 1000} km`;
@@ -194,7 +222,8 @@ import Layout from '../layouts/Layout.astro';
 
 			const moonSunURL = `https://aa.usno.navy.mil/api/rstt/oneday?date=2016-12-1%20&coords=${lat},%20${long}`
 
-			addTerminalLine(`> Fetching "${moonSunURL}"...`);
+			addTerminalLine("", "break");
+			addTerminalLine(`> Fetching "${moonSunURL}"...`, 'output');
 
 			const moonSun = await actions.fetch({ cache: false, url: moonSunURL });
 
@@ -204,7 +233,7 @@ import Layout from '../layouts/Layout.astro';
 
 			const sunrise = moonSun.data.properties.data.sundata.find(({phen}) => phen === "Rise")
 			const sunset = moonSun.data.properties.data.sundata.find(({phen}) => phen === "Set")
-			
+
 			missionData.sunrise = sunrise?.time
 			missionData.sunset = sunset?.time
 
@@ -213,7 +242,7 @@ import Layout from '../layouts/Layout.astro';
 			const weatherURL = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${long}&current=temperature_2m,is_day,apparent_temperature`
 
 			addTerminalLine("", "break");
-			addTerminalLine(`> Fetching "${weatherURL}"...`);
+			addTerminalLine(`> Fetching "${weatherURL}"...`, 'output');
 
 			const weather = await actions.fetch({ cache: false, url: weatherURL });
 
@@ -227,7 +256,7 @@ import Layout from '../layouts/Layout.astro';
 			const issURL = "https://api.wheretheiss.at/v1/satellites/25544"
 
 			addTerminalLine("", "break");
-			addTerminalLine(`> Fetching "${issURL}"...`);
+			addTerminalLine(`> Fetching "${issURL}"...`, 'output');
 
 			const iss = await actions.fetch({ cache: false, url: issURL });
 
@@ -244,7 +273,7 @@ import Layout from '../layouts/Layout.astro';
 			const knowncountURL = "https://api.le-systeme-solaire.net/rest/knowncount/"
 
 			addTerminalLine("", "break");
-			addTerminalLine(`> Fetching "${knowncountURL}"...`);
+			addTerminalLine(`> Fetching "${knowncountURL}"...`, 'output');
 
 			const knowncount = await actions.fetch({ cache: false, url: knowncountURL });
 
@@ -271,14 +300,14 @@ import Layout from '../layouts/Layout.astro';
 			const bodiesURL = "https://api.le-systeme-solaire.net/rest/bodies/"
 
 			addTerminalLine("", "break");
-			addTerminalLine(`> Fetching "${bodiesURL}"...`);
+			addTerminalLine(`> Fetching "${bodiesURL}"...`, 'output');
 
 			const bodies = await actions.fetch({ cache: false, url: bodiesURL });
 
 			durations.cached += bodies.data.duration.cached
 			durations.uncached += bodies.data.duration.uncached
 
-			const candidates = bodies.data.bodies.filter(body => body.vol && body.mass && body.gravity)
+			const candidates = bodies.data.bodies.filter(body => body.id !== "terre" && body.vol && body.mass && body.gravity && body.density && body.escape)
 			const index = Math.floor((Math.random() * candidates.length))
 			const body = candidates[index]
 
@@ -286,13 +315,15 @@ import Layout from '../layouts/Layout.astro';
 			missionData.volume = `${body.vol.volValue} × 10<sup>${body.vol.volExponent}</sup> km³` 
 			missionData.mass = `${body.mass.massValue} × 10<sup>${body.mass.massExponent}</sup> kg` 
 			missionData.gravity = `${body.gravity} m/s`
+			missionData.density = `${body.density} g/cm³`
+			missionData.escape = `${body.escape} m/s`
 
 			addTerminalLine(`Network: ${bodies.data.duration.uncached}ms / Cache API: ${bodies.data.duration.cached}ms`);
 			addTerminalLine("", "break");
 			addTerminalLine("", "break");
 
 			addTerminalLine(`Without cache: ${durations.uncached}ms`, 'input');
-			addTerminalLine(`With Cache API: ${durations.cached}ms`, 'input');
+			addTerminalLine(`With Cache API: ${durations.cached}ms 🚀`, 'input');
 
 			await new Promise(resolve => {
 				setTimeout(resolve, 2_000)
@@ -356,11 +387,23 @@ import Layout from '../layouts/Layout.astro';
 				// Stagger each value
 				valueDelay += Math.max(350, chars.length * 22 + 80);
 			});
+		}
+
+    fetchBtn?.addEventListener('click', async (event) => {
+			event.preventDefault();
+			
+			// Scroll to the ship console
+			document.getElementById('ship-console')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+			
+			await generateMissionData();
 		});
 	</script>
+  <footer style="text-align: center; padding: 2rem 0; font-family: 'Space Mono', monospace; color: var(--color-accent); font-size: 0.9rem;">
+    Vibe-coded with <a href="https://windsurf.com/" target="_blank" rel="noopener" style="color: var(--color-primary);">Windsurf</a>. Built on <a href="https://astro.build/" target="_blank" rel="noopener" style="color: var(--color-primary);">Astro</a>. Source code available <a href="https://github.com/netlify/astro-cache-api-demo" target="_blank" rel="noopener" style="color: var(--color-primary);">here</a>.
+  </footer>
 </Layout>
 
-<style>
+<style is:global>
   .fancy-input-wrapper {
     display: flex;
     align-items: center;
@@ -794,8 +837,12 @@ import Layout from '../layouts/Layout.astro';
 		white-space: pre-wrap;
 	}
 	.terminal-lines .terminal-line.input {
-	color: var(--color-accent) !important;
-}
+		color: var(--color-accent) !important;
+	}
+
+	.terminal-line.text {
+		color: white;
+	}
 
 	.terminal-line.error {
 		color: #FF6B6B;
