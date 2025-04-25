@@ -202,6 +202,37 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
       terminal?.scrollTo(0, terminal.scrollHeight);
     }
 
+    const addTerminalProgressBar = async (numIncrements: number, time: number) => {
+      const terminal = document.querySelector('.terminal-lines') as HTMLElement;
+			const maxWidth = terminal.offsetWidth;
+			const maxCharacters = Math.floor(maxWidth / 8.82);
+			const line = document.createElement('div');
+			line.classList.add('terminal-line');
+			terminal?.appendChild(line);
+
+			const charactersToPrint = Math.max((numIncrements * maxCharacters) / 100, 1);
+			const timePerIncrement = time / 100;
+
+			let incrementCount = 0
+
+			return new Promise(resolve => {
+				const interval = setInterval(() => {
+					if (incrementCount < charactersToPrint) {
+						line.textContent += '#';
+						incrementCount++;
+					} else {
+						if (terminal) terminal.scrollTop = terminal.scrollHeight;
+						clearInterval(interval);
+
+						resolve(null)
+					}
+					if (terminal) terminal.scrollTop = terminal.scrollHeight;
+				}, timePerIncrement);
+			})
+		};
+
+		window.addTerminalProgressBar = addTerminalProgressBar
+
 		async function generateMissionData() {
 			if (!userCoordinates) {
 				addTerminalLine(`Launch location set to Netlify HQ.`, 'text');
@@ -227,14 +258,14 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
 			addTerminalLine("", "break");
 			addTerminalLine(`> Fetching "${moonSunURL}"...`, 'output');
 
-			const moonSun = await actions.fetch({ cache: false, url: moonSunURL });
+			const moonSun = await actions.fetch({ url: moonSunURL });
 
-			durations.cached += moonSun.data.duration.cached
-			durations.uncached += moonSun.data.duration.uncached
-			missionData.moonphase = moonSun.data.properties.data.curphase
+			durations.cached += moonSun.data?.duration?.cached
+			durations.uncached += moonSun.data?.duration?.uncached
+			missionData.moonphase = moonSun.data?.properties?.data?.curphase
 
-			const sunrise = moonSun.data.properties.data.sundata.find(({phen}) => phen === "Rise")
-			const sunset = moonSun.data.properties.data.sundata.find(({phen}) => phen === "Set")
+			const sunrise = moonSun.data?.properties?.data?.sundata?.find(({phen}: {phen: string}) => phen === "Rise")
+			const sunset = moonSun.data?.properties?.data?.sundata?.find(({phen}: {phen: string}) => phen === "Set")
 
 			missionData.sunrise = sunrise?.time
 			missionData.sunset = sunset?.time
@@ -246,13 +277,13 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
 			addTerminalLine("", "break");
 			addTerminalLine(`> Fetching "${weatherURL}"...`, 'output');
 
-			const weather = await actions.fetch({ cache: false, url: weatherURL });
+			const weather = await actions.fetch({ url: weatherURL });
 
-			durations.cached += weather.data.duration.cached
-			durations.uncached += weather.data.duration.uncached
-			missionData.weather = `${weather.data.current.temperature_2m}${weather.data.current_units.temperature_2m} (feels like ${weather.data.current.apparent_temperature}${weather.data.current_units.apparent_temperature})`
+			durations.cached += weather.data?.duration?.cached
+			durations.uncached += weather.data?.duration?.uncached
+			missionData.weather = `${weather.data?.current?.temperature_2m}${weather.data?.current_units?.temperature_2m} (feels like ${weather.data?.current?.apparent_temperature}${weather.data?.current_units?.apparent_temperature})`
 
-			addTerminalLine(`Network: ${weather.data.duration.uncached}ms / Cache API: ${weather.data.duration.cached}ms`);
+			addTerminalLine(`Network: ${weather.data?.duration?.uncached}ms / Cache API: ${weather.data?.duration?.cached}ms`);
 
 
 			const issURL = "https://api.wheretheiss.at/v1/satellites/25544"
@@ -260,72 +291,89 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
 			addTerminalLine("", "break");
 			addTerminalLine(`> Fetching "${issURL}"...`, 'output');
 
-			const iss = await actions.fetch({ cache: false, url: issURL });
+			const iss = await actions.fetch({ url: issURL });
 
-			durations.cached += iss.data.duration.cached
-			durations.uncached += iss.data.duration.uncached
+			durations.cached += iss.data?.duration?.cached
+			durations.uncached += iss.data?.duration?.uncached
 
-			missionData.latitude = `${iss.data.latitude}°`
-			missionData.longitude = `${iss.data.longitude}°`
-			missionData.altitude = `${iss.data.altitude} km`
-			missionData.velocity = `${iss.data.velocity} km/s`
+			missionData.latitude = `${iss.data?.latitude}°`
+			missionData.longitude = `${iss.data?.longitude}°`
+			missionData.altitude = `${iss.data?.altitude} km`
+			missionData.velocity = `${iss.data?.velocity} km/s`
 
-			addTerminalLine(`Network: ${iss.data.duration.uncached}ms / Cache API: ${iss.data.duration.cached}ms`);
+			addTerminalLine(`Network: ${iss.data?.duration?.uncached}ms / Cache API: ${iss.data?.duration?.cached}ms`);
 
 			const knowncountURL = "https://api.le-systeme-solaire.net/rest/knowncount/"
 
 			addTerminalLine("", "break");
 			addTerminalLine(`> Fetching "${knowncountURL}"...`, 'output');
 
-			const knowncount = await actions.fetch({ cache: false, url: knowncountURL });
+			const knowncount = await actions.fetch({ url: knowncountURL });
 
-			durations.cached += knowncount.data.duration.cached
-			durations.uncached += knowncount.data.duration.uncached
+			durations.cached += knowncount.data?.duration?.cached
+			durations.uncached += knowncount.data?.duration?.uncached
 
-			const numplanets = knowncount.data.knowncount.find((body) => body.id === "planet")
+			const numplanets = knowncount.data?.knowncount?.find((body: { id: string; }) => body.id === "planet")
 			missionData.numplanets = numplanets?.knownCount.toString()
 
-			const numdwarfs = knowncount.data.knowncount.find((body) => body.id === "dwarfPlanet")
+			const numdwarfs = knowncount.data?.knowncount?.find((body: { id: string; }) => body.id === "dwarfPlanet")
 			missionData.numdwarfs = numdwarfs?.knownCount.toString()
 
-			const numasteroids = knowncount.data.knowncount.find((body) => body.id === "asteroid")
+			const numasteroids = knowncount.data?.knowncount?.find((body: { id: string; }) => body.id === "asteroid")
 			missionData.numasteroids = numasteroids?.knownCount.toString()
 
-			const numcomets = knowncount.data.knowncount.find((body) => body.id === "comet")
+			const numcomets = knowncount.data?.knowncount?.find((body: { id: string; }) => body.id === "comet")
 			missionData.numcomets = numcomets?.knownCount.toString()
 
-			const nummoons = knowncount.data.knowncount.find((body) => body.id === "moonsPlanet")
+			const nummoons = knowncount.data?.knowncount?.find((body: { id: string; }) => body.id === "moonsPlanet")
 			missionData.nummoons = nummoons?.knownCount.toString()
 
-			addTerminalLine(`Network: ${knowncount.data.duration.uncached}ms / Cache API: ${knowncount.data.duration.cached}ms`);
+			addTerminalLine(`Network: ${knowncount.data?.duration?.uncached}ms / Cache API: ${knowncount.data?.duration?.cached}ms`);
 
 			const bodiesURL = "https://api.le-systeme-solaire.net/rest/bodies/"
 
 			addTerminalLine("", "break");
 			addTerminalLine(`> Fetching "${bodiesURL}"...`, 'output');
 
-			const bodies = await actions.fetch({ cache: false, url: bodiesURL });
+			const bodies = await actions.fetch({ url: bodiesURL });
 
-			durations.cached += bodies.data.duration.cached
-			durations.uncached += bodies.data.duration.uncached
+			durations.cached += bodies.data?.duration?.cached
+			durations.uncached += bodies.data?.duration?.uncached
 
-			const candidates = bodies.data.bodies.filter(body => body.id !== "terre" && body.vol && body.mass && body.gravity && body.density && body.escape)
+			const candidates = bodies.data?.bodies?.filter((body: { id: string; vol: { volValue: number; volExponent: number; }; mass: { massValue: number; massExponent: number; }; gravity: number; density: number; escape: number; }) => body.id !== "terre" && body.vol && body.mass && body.gravity && body.density && body.escape) || []
 			const index = Math.floor((Math.random() * candidates.length))
 			const body = candidates[index]
 
-			missionData.planet = body.englishName
-			missionData.volume = `${body.vol.volValue} × 10<sup>${body.vol.volExponent}</sup> km³` 
-			missionData.mass = `${body.mass.massValue} × 10<sup>${body.mass.massExponent}</sup> kg` 
-			missionData.gravity = `${body.gravity} m/s`
-			missionData.density = `${body.density} g/cm³`
-			missionData.escape = `${body.escape} m/s`
+			if (body) {
+				missionData.planet = body.englishName
+				missionData.volume = `${body.vol.volValue} × 10<sup>${body.vol.volExponent}</sup> km³` 
+				missionData.mass = `${body.mass.massValue} × 10<sup>${body.mass.massExponent}</sup> kg` 
+				missionData.gravity = `${body.gravity} m/s`
+				missionData.density = `${body.density} g/cm³`
+				missionData.escape = `${body.escape} m/s`
+			}
+			
 
-			addTerminalLine(`Network: ${bodies.data.duration.uncached}ms / Cache API: ${bodies.data.duration.cached}ms`);
+			addTerminalLine(`Network: ${bodies.data?.duration?.uncached}ms / Cache API: ${bodies.data?.duration?.cached}ms`);
 			addTerminalLine("", "break");
 			addTerminalLine("", "break");
 
-			addTerminalLine(`Without cache: ${durations.uncached}ms`, 'input');
-			addTerminalLine(`With Cache API: ${durations.cached}ms 🚀`, 'input');
+			addTerminalLine(`No cache`, 'input');
+			const progress1 = addTerminalProgressBar(100, durations.uncached);
+			await progress1;
+			addTerminalLine(`${durations.uncached}ms`, 'text');
+			addTerminalLine("", "break");
+
+			const percentage = ((durations.cached * 100) / durations.uncached) || 1
+
+			addTerminalLine(`With Cache API`, 'input');
+			const progress2 = addTerminalProgressBar(percentage, durations.cached)
+			await progress2;
+			addTerminalLine(`${durations.cached}ms`, 'text');
+			addTerminalLine("", "break");
+
+			const delta = Math.round(durations.uncached / durations.cached);
+			addTerminalLine(`Liftoff ~${delta}x faster with the Cache API! 🚀`, 'input');
 
 			await new Promise(resolve => {
 				setTimeout(resolve, 2_000)
@@ -344,7 +392,7 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
 				el.innerHTML = '';
 				const key = el.getAttribute('data-key');
 				if (!key || !(key in missionData)) return;
-				const raw = missionData[key];
+				const raw = missionData[key] || "";
 				// Pre-calculate and reserve space to prevent layout shift
 				let tempSpan = document.createElement('span');
 				tempSpan.style.visibility = 'hidden';

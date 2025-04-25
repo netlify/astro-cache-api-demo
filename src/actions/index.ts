@@ -10,7 +10,26 @@ export const server = {
       const cache = await caches.open("my-cache");
       const uncachedStart = Date.now();
 
-      const res = await fetch(input.url);
+      let res: Response | undefined;
+
+      try {
+        res = await fetch(input.url);
+
+        if (!res.ok) {
+          throw new Error("Unexpected status code");
+        }
+      } catch {
+        const duration = Date.now() - uncachedStart;
+
+        return {
+          duration: {
+            cached: duration,
+            uncached: duration
+          },
+          data: null
+        };
+      }
+
       const uncachedDuration = Date.now() - uncachedStart;
 
       await cache.put(input.url, res.clone());
