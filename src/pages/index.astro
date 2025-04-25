@@ -58,6 +58,7 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
       <ul class="mission-list">
         <li><span class="mission-label">Latitude:</span> <span class="mission-value" data-key="launchlatitude"></span></li>
 				<li><span class="mission-label">Longitude:</span> <span class="mission-value" data-key="launchlongitude"></span></li>
+				<li><span class="mission-label">Elevation:</span> <span class="mission-value" data-key="launchelevation"></span></li>
         <li><span class="mission-label">Distance from Netlify HQ:</span> <span class="mission-value" data-key="distance"></span></li>
         <li><span class="mission-label">Sun rise time:</span> <span class="mission-value" data-key="sunrise"></span></li>
         <li><span class="mission-label">Sun set time:</span> <span class="mission-value" data-key="sunset"></span></li>
@@ -87,6 +88,9 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
         <li><span class="mission-label">Longitude:</span> <span class="mission-value" data-key="longitude"></span></li>
         <li><span class="mission-label">Altitude:</span> <span class="mission-value" data-key="altitude"></span></li>
         <li><span class="mission-label">Velocity:</span> <span class="mission-value" data-key="velocity"></span></li>
+				<li><span class="mission-label">Astronauts on board:</span> <span class="mission-value" data-key="isspeoplecount"></span></li>
+				<li><span class="mission-label">Expedition number:</span> <span class="mission-value" data-key="issexpedition"></span></li>
+				<li><span class="mission-label">End of expedition:</span> <span class="mission-value" data-key="issexpeditionend"></span></li>
       </ul>
     </div>
     <!-- Objects Scanned -->
@@ -125,7 +129,7 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
     }
 
     // Mission data object
-    const missionData: Record<string, string> = {
+    let missionData: Record<string, string> = {
       launchlatitude: "?",
 			launchlongitude: "?",
       distance: "?",
@@ -147,7 +151,10 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
       numdwarfs: "?",
       numasteroids: "?",
       numcomets: "?",
-      nummoons: "?"
+      nummoons: "?",
+			isspeoplecount: "?",
+			issexpedition: "?",
+			issexpeditionend: "?"
     };
 		
 		const fetchBtn = document.getElementById("fetch-btn") as HTMLButtonElement;
@@ -231,7 +238,28 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
 			})
 		};
 
-		window.addTerminalProgressBar = addTerminalProgressBar
+		async function fetchData(url: string, durations: {cached: number, uncached: number}, dataMapper: (data: any) => Record<string, string>) {
+			addTerminalLine("", "break");
+			addTerminalLine(`> Fetching "${url}"...`, 'output');
+
+			const res = await actions.fetch({ url: url });
+
+			durations.cached += res.data?.duration?.cached;
+			durations.uncached += res.data?.duration?.uncached;
+
+			if (!res.data.error) {
+				missionData = {
+					...missionData,
+					...dataMapper(res.data)
+				}
+
+				addTerminalLine(`Network: ${res.data?.duration?.uncached}ms / Cache API: ${res.data?.duration?.cached}ms`);
+
+				return;
+			}
+
+			addTerminalLine(`Resource is unavailable`, "error");
+		}
 
 		async function generateMissionData() {
 			if (!userCoordinates) {
@@ -245,7 +273,7 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
 
 			const {latitude: lat, longitude: long} = coords
 
-			const hqDistance = Math.round(haversineDistance(lat, long));
+			const hqDistance = Math.round(haversineDistance(lat.toString(), long.toString()));
 			missionData.distance = `${hqDistance / 1000} km`;
 
 			const durations = {
@@ -253,108 +281,74 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
 				uncached: 0
 			};
 
-			const moonSunURL = `https://aa.usno.navy.mil/api/rstt/oneday?date=2016-12-1%20&coords=${lat},%20${long}`
+			await fetchData(`https://aa.usno.navy.mil/api/rstt/oneday?date=2016-12-1%20&coords=${lat},%20${long}`, durations, (data) => {
+				const moonphase = data?.properties?.data?.curphase
+				const sunrise = data?.properties?.data?.sundata?.find(({phen}: {phen: string}) => phen === "Rise")
+				const sunset = data?.properties?.data?.sundata?.find(({phen}: {phen: string}) => phen === "Set")
 
-			addTerminalLine("", "break");
-			addTerminalLine(`> Fetching "${moonSunURL}"...`, 'output');
+				return {
+					moonphase,
+					sunrise: sunrise?.time,
+					sunset: sunset?.time
+				}
+			})
 
-			const moonSun = await actions.fetch({ url: moonSunURL });
-
-			durations.cached += moonSun.data?.duration?.cached
-			durations.uncached += moonSun.data?.duration?.uncached
-			missionData.moonphase = moonSun.data?.properties?.data?.curphase
-
-			const sunrise = moonSun.data?.properties?.data?.sundata?.find(({phen}: {phen: string}) => phen === "Rise")
-			const sunset = moonSun.data?.properties?.data?.sundata?.find(({phen}: {phen: string}) => phen === "Set")
-
-			missionData.sunrise = sunrise?.time
-			missionData.sunset = sunset?.time
-
-			addTerminalLine(`Network: ${moonSun.data.duration.uncached}ms / Cache API: ${moonSun.data.duration.cached}ms`);
-
-			const weatherURL = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${long}&current=temperature_2m,is_day,apparent_temperature`
-
-			addTerminalLine("", "break");
-			addTerminalLine(`> Fetching "${weatherURL}"...`, 'output');
-
-			const weather = await actions.fetch({ url: weatherURL });
-
-			durations.cached += weather.data?.duration?.cached
-			durations.uncached += weather.data?.duration?.uncached
-			missionData.weather = `${weather.data?.current?.temperature_2m}${weather.data?.current_units?.temperature_2m} (feels like ${weather.data?.current?.apparent_temperature}${weather.data?.current_units?.apparent_temperature})`
-
-			addTerminalLine(`Network: ${weather.data?.duration?.uncached}ms / Cache API: ${weather.data?.duration?.cached}ms`);
-
-
-			const issURL = "https://api.wheretheiss.at/v1/satellites/25544"
-
-			addTerminalLine("", "break");
-			addTerminalLine(`> Fetching "${issURL}"...`, 'output');
-
-			const iss = await actions.fetch({ url: issURL });
-
-			durations.cached += iss.data?.duration?.cached
-			durations.uncached += iss.data?.duration?.uncached
-
-			missionData.latitude = `${iss.data?.latitude}°`
-			missionData.longitude = `${iss.data?.longitude}°`
-			missionData.altitude = `${iss.data?.altitude} km`
-			missionData.velocity = `${iss.data?.velocity} km/s`
-
-			addTerminalLine(`Network: ${iss.data?.duration?.uncached}ms / Cache API: ${iss.data?.duration?.cached}ms`);
-
-			const knowncountURL = "https://api.le-systeme-solaire.net/rest/knowncount/"
-
-			addTerminalLine("", "break");
-			addTerminalLine(`> Fetching "${knowncountURL}"...`, 'output');
-
-			const knowncount = await actions.fetch({ url: knowncountURL });
-
-			durations.cached += knowncount.data?.duration?.cached
-			durations.uncached += knowncount.data?.duration?.uncached
-
-			const numplanets = knowncount.data?.knowncount?.find((body: { id: string; }) => body.id === "planet")
-			missionData.numplanets = numplanets?.knownCount.toString()
-
-			const numdwarfs = knowncount.data?.knowncount?.find((body: { id: string; }) => body.id === "dwarfPlanet")
-			missionData.numdwarfs = numdwarfs?.knownCount.toString()
-
-			const numasteroids = knowncount.data?.knowncount?.find((body: { id: string; }) => body.id === "asteroid")
-			missionData.numasteroids = numasteroids?.knownCount.toString()
-
-			const numcomets = knowncount.data?.knowncount?.find((body: { id: string; }) => body.id === "comet")
-			missionData.numcomets = numcomets?.knownCount.toString()
-
-			const nummoons = knowncount.data?.knowncount?.find((body: { id: string; }) => body.id === "moonsPlanet")
-			missionData.nummoons = nummoons?.knownCount.toString()
-
-			addTerminalLine(`Network: ${knowncount.data?.duration?.uncached}ms / Cache API: ${knowncount.data?.duration?.cached}ms`);
-
-			const bodiesURL = "https://api.le-systeme-solaire.net/rest/bodies/"
-
-			addTerminalLine("", "break");
-			addTerminalLine(`> Fetching "${bodiesURL}"...`, 'output');
-
-			const bodies = await actions.fetch({ url: bodiesURL });
-
-			durations.cached += bodies.data?.duration?.cached
-			durations.uncached += bodies.data?.duration?.uncached
-
-			const candidates = bodies.data?.bodies?.filter((body: { id: string; vol: { volValue: number; volExponent: number; }; mass: { massValue: number; massExponent: number; }; gravity: number; density: number; escape: number; }) => body.id !== "terre" && body.vol && body.mass && body.gravity && body.density && body.escape) || []
-			const index = Math.floor((Math.random() * candidates.length))
-			const body = candidates[index]
-
-			if (body) {
-				missionData.planet = body.englishName
-				missionData.volume = `${body.vol.volValue} × 10<sup>${body.vol.volExponent}</sup> km³` 
-				missionData.mass = `${body.mass.massValue} × 10<sup>${body.mass.massExponent}</sup> kg` 
-				missionData.gravity = `${body.gravity} m/s`
-				missionData.density = `${body.density} g/cm³`
-				missionData.escape = `${body.escape} m/s`
-			}
+			await fetchData(`https://api.open-meteo.com/v1/elevation?latitude=${lat}&longitude=${long}`, durations, (data) => ({
+				launchelevation: `${data?.elevation} m`
+			}))
 			
+			await fetchData(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${long}&current=temperature_2m,is_day,apparent_temperature`, durations, (data) => ({
+				weather: `${data?.current?.temperature_2m}${data?.current_units?.temperature_2m} (feels like ${data?.current?.apparent_temperature}${data?.current_units?.apparent_temperature})`
+			}))
 
-			addTerminalLine(`Network: ${bodies.data?.duration?.uncached}ms / Cache API: ${bodies.data?.duration?.cached}ms`);
+			await fetchData("https://api.wheretheiss.at/v1/satellites/25544", durations, (data) => ({
+				latitude:`${data?.latitude}°`,
+				longitude:`${data?.longitude}°`,
+				altitude:`${data?.altitude} km`,
+				velocity:`${data?.velocity} km/s`,
+			}))
+
+			await fetchData("https://api.le-systeme-solaire.net/rest/knowncount/", durations, (data) => {
+				const numplanets = data?.knowncount?.find((body: { id: string; }) => body.id === "planet")
+				const numdwarfs = data?.knowncount?.find((body: { id: string; }) => body.id === "dwarfPlanet")
+				const numasteroids = data?.knowncount?.find((body: { id: string; }) => body.id === "asteroid")
+				const numcomets = data?.knowncount?.find((body: { id: string; }) => body.id === "comet")
+				const nummoons = data?.knowncount?.find((body: { id: string; }) => body.id === "moonsPlanet")
+
+				return {
+					numplanets: numplanets?.knownCount.toString(),
+					numdwarfs: numdwarfs?.knownCount.toString(),
+					numasteroids: numasteroids?.knownCount.toString(),
+					numcomets: numcomets?.knownCount.toString(),
+					nummoons: nummoons?.knownCount.toString()
+				}
+			})
+
+			await fetchData("https://api.le-systeme-solaire.net/rest/bodies/", durations, (data) => {
+				const candidates = data?.bodies?.filter((body: { id: string; vol: { volValue: number; volExponent: number; }; mass: { massValue: number; massExponent: number; }; gravity: number; density: number; escape: number; }) => body.id !== "terre" && body.vol && body.mass && body.gravity && body.density && body.escape) || []
+				const index = Math.floor((Math.random() * candidates.length))
+				const body = candidates[index]
+
+				if (body) {
+					return {
+						planet: body.englishName || "?",
+						volume: `${body.vol.volValue} × 10<sup>${body.vol.volExponent}</sup> km³` ,
+						mass: `${body.mass.massValue} × 10<sup>${body.mass.massExponent}</sup> kg` ,
+						gravity: `${body.gravity} m/s`,
+						density: `${body.density} g/cm³`,
+						escape: `${body.escape} m/s`,
+					}
+				}
+
+				return {} as Record<string, string>
+			})
+
+			await fetchData("https://corquaid.github.io/international-space-station-APIs/JSON/people-in-space.json", durations, (data) => ({
+				isspeoplecount: data?.number.toString(),
+				issexpedition: data?.iss_expedition.toString(),
+				issexpeditionend: new Date(data?.expedition_end_date * 1000).toUTCString()
+			}))
+
 			addTerminalLine("", "break");
 			addTerminalLine("", "break");
 
@@ -373,7 +367,7 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
 			addTerminalLine("", "break");
 
 			const delta = Math.round(durations.uncached / durations.cached);
-			addTerminalLine(`Liftoff ~${delta}x faster with the Cache API! 🚀`, 'input');
+			addTerminalLine(`Liftoff is ~${delta}x faster! 🚀`, 'input');
 
 			await new Promise(resolve => {
 				setTimeout(resolve, 2_000)

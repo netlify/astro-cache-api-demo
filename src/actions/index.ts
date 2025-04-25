@@ -26,7 +26,7 @@ export const server = {
             cached: duration,
             uncached: duration
           },
-          data: null
+          error: true
         };
       }
 
