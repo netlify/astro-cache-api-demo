@@ -159,6 +159,7 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
 		
 		const fetchBtn = document.getElementById("fetch-btn") as HTMLButtonElement;
     const terminal = document.getElementById("terminal-output");
+		const cursor = document.querySelector(".terminal-cursor")
 
     const locationInput = document.getElementById("location-input") as HTMLInputElement;
     const geoBtn = document.getElementById("geo-btn") as HTMLButtonElement;
@@ -207,6 +208,8 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
       line.style = "min-height: 1rem"
       terminal?.appendChild(line);
       terminal?.scrollTo(0, terminal.scrollHeight);
+
+			return line
     }
 
     const addTerminalProgressBar = async (numIncrements: number, time: number) => {
@@ -347,27 +350,39 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
 				isspeoplecount: data?.number.toString(),
 				issexpedition: data?.iss_expedition.toString(),
 				issexpeditionend: new Date(data?.expedition_end_date * 1000).toUTCString()
-			}))
+			}));
+
+			(cursor as HTMLElement).style.display = "none";
+
+			durations.cached = Math.max(durations.cached, 1);
 
 			addTerminalLine("", "break");
 			addTerminalLine("", "break");
 
 			addTerminalLine(`No cache`, 'input');
 			const progress1 = addTerminalProgressBar(100, durations.uncached);
-			await progress1;
-			addTerminalLine(`${durations.uncached}ms`, 'text');
+			
+			const duration1 = addTerminalLine("...", 'text');
 			addTerminalLine("", "break");
 
 			const percentage = ((durations.cached * 100) / durations.uncached) || 1
 
 			addTerminalLine(`With Cache API`, 'input');
 			const progress2 = addTerminalProgressBar(percentage, durations.cached)
-			await progress2;
-			addTerminalLine(`${durations.cached}ms`, 'text');
+			
+			const duration2 = addTerminalLine("...", 'text');
 			addTerminalLine("", "break");
 
+			const deltaEl = addTerminalLine(" ", 'input');
+
+			await progress1;
+			duration1.textContent = `${durations.uncached}ms`
+
+			await progress2;
+			duration2.textContent = `${durations.cached}ms`
+
 			const delta = Math.round(durations.uncached / durations.cached);
-			addTerminalLine(`Liftoff is ~${delta}x faster! 🚀`, 'input');
+			deltaEl.textContent = `Liftoff is ~${delta}x faster! 🚀`
 
 			await new Promise(resolve => {
 				setTimeout(resolve, 2_000)
