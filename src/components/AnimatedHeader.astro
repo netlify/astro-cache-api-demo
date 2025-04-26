@@ -28,9 +28,8 @@
     </g>
 
     <!-- Sun -->
-    <g class="celestial-body sun-group">
-      <title>Sun
-No puppies here ☹️</title>
+    <g class="celestial-body sun-group" data-name="Sun">
+      <title>Sun</title>
       <circle cx="400" cy="150" r="15" fill="#FDB813" class="sun">
         <animate attributeName="opacity" values="0.85;1;0.85" dur="3s" repeatCount="indefinite" />
         <animate attributeName="r" values="15;15.5;15" dur="3s" repeatCount="indefinite" />
@@ -40,9 +39,8 @@ No puppies here ☹️</title>
     <!-- Planets -->
     <g class="planets">
       <!-- Mercury -->
-      <g class="celestial-body mercury-group">
-        <title>Mercury
-No puppies here ☹️</title>
+      <g class="celestial-body mercury-group" data-name="Mercury">
+        <title>Mercury</title>
         <circle cx="435" cy="150" r="2" fill="#E5E5E5" class="planet mercury">
           <animateTransform
             attributeName="transform"
@@ -56,9 +54,8 @@ No puppies here ☹️</title>
       </g>
 
       <!-- Venus -->
-      <g class="celestial-body venus-group">
-        <title>Venus
-No puppies here ☹️</title>
+      <g class="celestial-body venus-group" data-name="Venus">
+        <title>Venus</title>
         <circle cx="450" cy="150" r="3.5" fill="#FFB366" class="planet venus">
           <animateTransform
             attributeName="transform"
@@ -72,9 +69,8 @@ No puppies here ☹️</title>
       </g>
 
       <!-- Earth -->
-      <g class="celestial-body earth-group">
-        <title>Earth
-Lots of puppies here! 🐶🐶🐶</title>
+      <g class="celestial-body earth-group" data-name="Earth">
+        <title>Earth</title>
         <circle cx="465" cy="150" r="4" fill="#66B3FF" class="planet earth">
           <animateTransform
             attributeName="transform"
@@ -88,9 +84,8 @@ Lots of puppies here! 🐶🐶🐶</title>
       </g>
 
       <!-- Mars -->
-      <g class="celestial-body mars-group">
-        <title>Mars
-No puppies here ☹️</title>
+      <g class="celestial-body mars-group" data-name="Mars">
+        <title>Mars</title>
         <circle cx="480" cy="150" r="3" fill="#FF6666" class="planet mars">
           <animateTransform
             attributeName="transform"
@@ -104,9 +99,8 @@ No puppies here ☹️</title>
       </g>
 
       <!-- Jupiter -->
-      <g class="celestial-body jupiter-group">
-        <title>Jupiter
-No puppies here ☹️</title>
+      <g class="celestial-body jupiter-group" data-name="Jupiter">
+        <title>Jupiter</title>
         <circle cx="500" cy="150" r="8" fill="#FFD700" class="planet jupiter">
           <animateTransform
             attributeName="transform"
@@ -120,9 +114,8 @@ No puppies here ☹️</title>
       </g>
 
       <!-- Saturn with rings -->
-      <g class="celestial-body saturn-group">
-        <title>Saturn
-No puppies here ☹️</title>
+      <g class="celestial-body saturn-group" data-name="Saturn">
+        <title>Saturn</title>
         <g class="planet saturn" transform="translate(520, 150)">
           <animateTransform
             attributeName="transform"
@@ -139,9 +132,8 @@ No puppies here ☹️</title>
       </g>
 
       <!-- Uranus -->
-      <g class="celestial-body uranus-group">
-        <title>Uranus
-No puppies here ☹️</title>
+      <g class="celestial-body uranus-group" data-name="Uranus">
+        <title>Uranus</title>
         <circle cx="540" cy="150" r="5" fill="#66FFE6" class="planet uranus">
           <animateTransform
             attributeName="transform"
@@ -155,9 +147,8 @@ No puppies here ☹️</title>
       </g>
 
       <!-- Neptune -->
-      <g class="celestial-body neptune-group">
-        <title>Neptune
-No puppies here ☹️</title>
+      <g class="celestial-body neptune-group" data-name="Neptune">
+        <title>Neptune</title>
         <circle cx="560" cy="150" r="5" fill="#3366FF" class="planet neptune">
           <animateTransform
             attributeName="transform"
@@ -203,7 +194,7 @@ No puppies here ☹️</title>
 
   /* Celestial body hover effects */
   .celestial-body {
-    cursor: help;
+    cursor: pointer;
   }
 
   .celestial-body:hover {

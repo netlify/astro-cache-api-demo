@@ -98,11 +98,11 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
       <h3 class="mission-panel-title">🔭 Celestial objects</h3>
       <div class="mission-panel-subtitle">There's a lot of stuff out there</div>
       <ul class="mission-list">
-        <li><span class="mission-label">Number of planets:</span> <span class="mission-value" data-key="numplanets"></span></li>
-        <li><span class="mission-label">Number of dwarf planets:</span> <span class="mission-value" data-key="numdwarfs"></span></li>
-        <li><span class="mission-label">Number of asteroids:</span> <span class="mission-value" data-key="numasteroids"></span></li>
-        <li><span class="mission-label">Number of comets:</span> <span class="mission-value" data-key="numcomets"></span></li>
-        <li><span class="mission-label">Number of moons:</span> <span class="mission-value" data-key="nummoons"></span></li>
+        <li><span class="mission-label">Planets:</span> <span class="mission-value" data-key="numplanets"></span></li>
+        <li><span class="mission-label">Dwarf planets:</span> <span class="mission-value" data-key="numdwarfs"></span></li>
+        <li><span class="mission-label">Asteroids:</span> <span class="mission-value" data-key="numasteroids"></span></li>
+        <li><span class="mission-label">Comets:</span> <span class="mission-value" data-key="numcomets"></span></li>
+        <li><span class="mission-label">Moons:</span> <span class="mission-value" data-key="nummoons"></span></li>
       </ul>
     </div>
   </div>
@@ -169,6 +169,16 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
 			latitude: 37.78288723962938,
 			longitude: -122.39360711746808
 		}
+
+		document.querySelectorAll(".celestial-body").forEach(el => {
+			el.addEventListener("click", () => {
+				const name = el.getAttribute('data-name') || undefined;
+
+				document.getElementById('ship-console')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+				generateMissionData(name);
+			})
+  	})
 
     geoBtn.addEventListener('click', () => {
       if (!navigator.geolocation) {
@@ -264,9 +274,24 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
 			addTerminalLine(`Resource is unavailable`, "error");
 		}
 
-		async function generateMissionData() {
+		async function generateMissionData(destination?: string) {
 			if (!userCoordinates) {
 				addTerminalLine(`Launch location set to Netlify HQ.`, 'text');
+			}
+
+			if (destination) {
+				addTerminalLine("", "break");
+				addTerminalLine(`> System override: setting destination to ${destination}...`, 'output');
+
+				if (destination === "Earth") {
+					addTerminalLine("You're already on Earth. No need for caching in local development!", "error");
+
+					return;
+				} else {
+					await new Promise(resolve => {
+						setTimeout(resolve, 3_000);
+					});
+				}
 			}
 
 			const coords = userCoordinates || netlifyCoordinates
@@ -328,9 +353,16 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
 			})
 
 			await fetchData("https://api.le-systeme-solaire.net/rest/bodies/", durations, (data) => {
-				const candidates = data?.bodies?.filter((body: { id: string; vol: { volValue: number; volExponent: number; }; mass: { massValue: number; massExponent: number; }; gravity: number; density: number; escape: number; }) => body.id !== "terre" && body.vol && body.mass && body.gravity && body.density && body.escape) || []
-				const index = Math.floor((Math.random() * candidates.length))
-				const body = candidates[index]
+				let body: any
+
+				if (destination) {
+					body = data?.bodies.find((body: { englishName: string }) => body.englishName === destination)
+				} else {
+					const candidates = data?.bodies?.filter((body: { id: string; vol: { volValue: number; volExponent: number; }; mass: { massValue: number; massExponent: number; }; gravity: number; density: number; escape: number; }) => body.id !== "terre" && body.vol && body.mass && body.gravity && body.density && body.escape) || []
+					const index = Math.floor((Math.random() * candidates.length))
+					
+					body = candidates[index]
+				}
 
 				if (body) {
 					return {
@@ -382,7 +414,7 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
 			duration2.textContent = `${durations.cached}ms`
 
 			const delta = Math.round(durations.uncached / durations.cached);
-			deltaEl.textContent = `Liftoff is ~${delta}x faster! 🚀`
+			deltaEl.textContent = `Lift off ~${delta} times faster! 🚀`
 
 			await new Promise(resolve => {
 				setTimeout(resolve, 2_000)
