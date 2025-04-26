@@ -273,6 +273,8 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
 				return;
 			}
 
+			console.log("Error in fetch:", res.error, res.data)
+
 			addTerminalLine(`Resource is unavailable`, "error");
 		}
 

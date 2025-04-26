@@ -42,7 +42,9 @@ export const server = {
         });
 
         await cache.put(input.url, cachedResponse);
-      } catch (error) {}
+      } catch (error) {
+        console.error("Failed to add to cache", input.url, error);
+      }
 
       const cachedStart = Date.now();
 
@@ -62,6 +64,8 @@ export const server = {
       await cached?.json();
 
       const data = await res.json();
+
+      console.log("Returning data", input.url);
 
       return {
         duration: {
