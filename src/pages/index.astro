@@ -56,7 +56,8 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
       <h3 class="mission-panel-title">🚀 Launchpad</h3>
       <div class="mission-panel-subtitle">Where you're launching from</div>
       <ul class="mission-list">
-        <li><span class="mission-label">Latitude:</span> <span class="mission-value" data-key="launchlatitude"></span></li>
+        <li><span class="mission-label">Body name:</span> <span class="mission-value" data-key="launchname"></span></li>
+				<li><span class="mission-label">Latitude:</span> <span class="mission-value" data-key="launchlatitude"></span></li>
 				<li><span class="mission-label">Longitude:</span> <span class="mission-value" data-key="launchlongitude"></span></li>
 				<li><span class="mission-label">Elevation:</span> <span class="mission-value" data-key="launchelevation"></span></li>
         <li><span class="mission-label">Distance from Netlify HQ:</span> <span class="mission-value" data-key="distance"></span></li>
@@ -130,6 +131,7 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
 
     // Mission data object
     let missionData: Record<string, string> = {
+			launchname: "Earth",
       launchlatitude: "?",
 			launchlongitude: "?",
       distance: "?",
