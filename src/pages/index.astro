@@ -8,11 +8,11 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
 	<div class="container">
 		<h1 class="main-title">Netlify Cache API</h1>
 		<div class="intro-block">
-			<p class="intro-paragraph">You're embarking on a journey to the depths of our galaxy.</p>
-			<p class="intro-paragraph">We'll generate your mission data from several HTTP calls. The faster we make these calls, the sooner you're off to space.</p>
-			<p class="intro-paragraph">The <span class="cache-link"><a href="https://docs.netlify.com/platform/cache-api/" target="_blank" rel="noopener">Netlify Cache API</a></span> can help with that.</p>
-			<p class="intro-paragraph">We'll show you the different HTTP calls being made and how long they take — with and without the cache.</p>
-			<p class="intro-paragraph">Godspeed!</p>
+			<p class="intro-paragraph">You're about to embark on a journey to the far reaches of our galaxy.</p>
+			<p class="intro-paragraph">Before liftoff, we'll gather your mission data through a series of API calls. The faster we complete them, the sooner you launch into space.</p>
+			<p class="intro-paragraph">That's where the <span class="cache-link"><a href="https://docs.netlify.com/platform/cache-api/" target="_blank" rel="noopener">Netlify Cache API</a></span> comes in.</p>
+			<p class="intro-paragraph">We'll show you the different HTTP requests being made — and how much time you save with caching.</p>
+			<p class="intro-paragraph">Godspeed, explorer!</p>
 		</div>
 		<div class="form wide-form-section">
   <div class="input-wrapper fancy-input-wrapper wide-form-section" style="flex-direction:column;align-items:stretch;gap:0.7rem;">
@@ -82,7 +82,7 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
     <!-- ISS Data -->
     <div class="mission-panel">
       <h3 class="mission-panel-title">🛰️ International Space Station</h3>
-      <div class="mission-panel-subtitle">Maybe stop there on the way?</div>
+      <div class="mission-panel-subtitle">Pit stop for coffee and chat?</div>
       <ul class="mission-list">
         <li><span class="mission-label">Latitude:</span> <span class="mission-value" data-key="latitude"></span></li>
         <li><span class="mission-label">Longitude:</span> <span class="mission-value" data-key="longitude"></span></li>
@@ -95,8 +95,8 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
     </div>
     <!-- Objects Scanned -->
     <div class="mission-panel">
-      <h3 class="mission-panel-title">🔭 Celestial objects</h3>
-      <div class="mission-panel-subtitle">There's a lot of stuff out there</div>
+      <h3 class="mission-panel-title">🔭 Objects scanned</h3>
+      <div class="mission-panel-subtitle">Watch out for these</div>
       <ul class="mission-list">
         <li><span class="mission-label">Planets:</span> <span class="mission-value" data-key="numplanets"></span></li>
         <li><span class="mission-label">Dwarf planets:</span> <span class="mission-value" data-key="numdwarfs"></span></li>
@@ -416,7 +416,6 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
 
 			await progress1;
 			await progress2;
-			
 
 			const delta = Math.round(durations.uncached / durations.cached);
 			deltaEl.textContent = `Lift off ~${delta} times faster! 🚀`

@@ -1,6 +1,8 @@
 import { defineAction } from "astro:actions";
 import { z } from "astro:schema";
 
+import { setCacheHeaders, HOUR } from "@netlify/cache";
+
 export const server = {
   fetch: defineAction({
     input: z.object({
@@ -32,11 +34,18 @@ export const server = {
 
       const uncachedDuration = Date.now() - uncachedStart;
 
-      await cache.put(input.url, res.clone());
+      const cachedResponse = setCacheHeaders(res.clone(), {
+        ttl: 2 * HOUR
+      });
+      await cache.put(input.url, cachedResponse);
 
       const cachedStart = Date.now();
       const cached = await cache.match(input.url);
-      const cachedDuration = Date.now() - cachedStart;
+
+      // For a fair benchmark, discard the duration if we had a cache miss.
+      const cachedDuration = cached
+        ? Date.now() - cachedStart
+        : uncachedDuration;
 
       await cached?.json();
 
