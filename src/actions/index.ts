@@ -36,18 +36,23 @@ export const server = {
 
       const uncachedDuration = Date.now() - uncachedStart;
 
-      const cachedResponse = setCacheHeaders(res.clone(), {
-        ttl: 2 * HOUR
-      });
-
       try {
+        const cachedResponse = setCacheHeaders(res.clone(), {
+          ttl: 2 * HOUR
+        });
+
         await cache.put(input.url, cachedResponse);
-      } catch (error) {
-        console.error("Failed to add to the cache", input.url, error);
-      }
+      } catch (error) {}
 
       const cachedStart = Date.now();
-      const cached = await cache.match(input.url);
+
+      let cached: Response | undefined;
+
+      try {
+        cached = await cache.match(input.url);
+      } catch (error) {
+        console.error("Failed to read cache", input.url, error);
+      }
 
       // For a fair benchmark, discard the duration if we had a cache miss.
       const cachedDuration = cached
