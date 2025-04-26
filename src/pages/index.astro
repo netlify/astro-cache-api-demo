@@ -260,7 +260,7 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
 			durations.cached += res.data?.duration?.cached;
 			durations.uncached += res.data?.duration?.uncached;
 
-			if (!res.data?.error) {
+			if (res.data && !res.data.error) {
 				missionData = {
 					...missionData,
 					...dataMapper(res.data)
