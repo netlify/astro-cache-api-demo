@@ -16,9 +16,9 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
 		</div>
 		<div class="form wide-form-section">
   <div class="input-wrapper fancy-input-wrapper wide-form-section" style="flex-direction:column;align-items:stretch;gap:0.7rem;">
-  <label for="location-input" class="astro-label" style="font-size:1.25rem;font-family:'Space Mono',monospace;font-weight:700;margin-bottom:0.1rem;">What's your location, astronaut?</label>
+  <label for="location-input" class="astro-label" style="font-size:1.25rem;font-family:'Space Mono',monospace;font-weight:700;margin-bottom:0.1rem;">Enter your location</label>
   <div style="display:flex;align-items:center;gap:0.7rem;width:100%;">
-    <input id="location-input" class="astro-input wide-input big-coord-input" type="text" placeholder="Netlify HQ" autocomplete="off" />
+    <input id="location-input" class="astro-input wide-input big-coord-input" type="text" placeholder="Leave blank for Netlify HQ" autocomplete="off" />
     <button type="button" id="geo-btn" style="min-width: 80px" class="astro-geolocate-btn small-geo-btn" title="Use my location" aria-label="Get current location">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg>
     </button>
@@ -166,7 +166,7 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
     const locationInput = document.getElementById("location-input") as HTMLInputElement;
     const geoBtn = document.getElementById("geo-btn") as HTMLButtonElement;
 
-		let userCoordinates: {latitude: number, longitude: number} | undefined
+		let userCoordinates = parseCoordinates(locationInput.value);
 		const netlifyCoordinates = {
 			latitude: 37.78288723962938,
 			longitude: -122.39360711746808
@@ -195,7 +195,7 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
       geoBtn.innerHTML = `<span style='font-size:1rem;'>...</span>`;
       navigator.geolocation.getCurrentPosition(
         (pos) => {
-					addTerminalLine(`Location retrieved. Click on "Generate mission data" to launch.`);
+					addTerminalLine(`Location retrieved. Click on "Generate mission" to launch.`);
 
 					userCoordinates = pos.coords
 
@@ -204,7 +204,7 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
           geoBtn.disabled = false;
         },
         () => {
-					addTerminalLine(`Could not get your location. Click on "Generate mission data" to launch from Netlify HQ.`);
+					addTerminalLine(`Could not get your location. Click on "Generate mission" to launch from Netlify HQ.`);
 
           geoBtn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg>`;
           geoBtn.disabled = false;
@@ -276,11 +276,27 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
 			addTerminalLine(`Resource is unavailable`, "error");
 		}
 
-		async function generateMissionData(destination?: string) {
-			if (!userCoordinates) {
-				addTerminalLine(`Launch location set to Netlify HQ.`, 'text');
+		function parseCoordinates(value: string) {
+			const parts = value.split(",").map(part => part.trim());
+
+			if (parts.length !== 2) {
+				return
 			}
 
+			const latitude = Number.parseFloat(parts[0])
+			const longitude = Number.parseFloat(parts[1])
+
+			if (Number.isNaN(latitude) || Number.isNaN(longitude)) {
+				return
+			}
+
+			return {
+				latitude,
+				longitude
+			}
+		}
+
+		async function generateMissionData(destination?: string) {
 			if (destination) {
 				addTerminalLine("", "break");
 				addTerminalLine(`> System override: setting destination to ${destination}...`, 'output');
@@ -296,6 +312,33 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
 				}
 			}
 
+			const durations = {
+				cached: 0,
+				uncached: 0
+			};
+
+			let launchLocation = userCoordinates ? "user location" : "Netlify HQ";
+
+			if (!userCoordinates && locationInput.value) {
+				await fetchData(`https://geocoding-api.open-meteo.com/v1/search?name=${locationInput.value}&count=1&language=en&format=json`, durations, (data) => {
+					const [result] = data?.results;
+
+					if (result) {
+						launchLocation = result.country;
+
+						userCoordinates = {
+							latitude: result.latitude,
+							longitude: result.longitude
+						}
+					}
+
+					return {}
+				})
+			}
+			
+			addTerminalLine("", "break");
+			addTerminalLine(`Launch location set to ${launchLocation}.`, 'text');		
+
 			const coords = userCoordinates || netlifyCoordinates
 
 			missionData.launchlatitude = `${coords.latitude}°`
@@ -304,12 +347,7 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
 			const {latitude: lat, longitude: long} = coords
 
 			const hqDistance = Math.round(haversineDistance(lat.toString(), long.toString()));
-			missionData.distance = `${hqDistance / 1000} km`;
-
-			const durations = {
-				cached: 0,
-				uncached: 0
-			};
+			missionData.distance = hqDistance === 0 ? "0 🎯" : `${hqDistance / 1000} km`;
 
 			await fetchData(`https://aa.usno.navy.mil/api/rstt/oneday?date=2016-12-1%20&coords=${lat},%20${long}`, durations, (data) => {
 				const moonphase = data?.properties?.data?.curphase
@@ -420,7 +458,7 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
 			await progress2;
 
 			const delta = Math.round(durations.uncached / durations.cached);
-			deltaEl.textContent = `Lift off ~${delta} times faster! 🚀`
+			deltaEl.textContent = `Lift off ~${delta}x faster! 🚀`
 
 			await new Promise(resolve => {
 				setTimeout(resolve, 2_000)
