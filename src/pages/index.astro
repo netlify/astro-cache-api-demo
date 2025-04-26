@@ -259,10 +259,10 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
 
 			const res = await actions.fetch({ url: url });
 
-			durations.cached += res.data?.duration?.cached;
-			durations.uncached += res.data?.duration?.uncached;
-
 			if (res.data && !res.data.error) {
+				durations.cached += res.data?.duration?.cached;
+				durations.uncached += res.data?.duration?.uncached;
+				
 				missionData = {
 					...missionData,
 					...dataMapper(res.data)
