@@ -20,7 +20,9 @@ export const server = {
         if (!res.ok) {
           throw new Error("Unexpected status code");
         }
-      } catch {
+      } catch (error) {
+        console.error("Failed to fetch", input.url, error);
+
         const duration = Date.now() - uncachedStart;
 
         return {
@@ -37,7 +39,12 @@ export const server = {
       const cachedResponse = setCacheHeaders(res.clone(), {
         ttl: 2 * HOUR
       });
-      await cache.put(input.url, cachedResponse);
+
+      try {
+        await cache.put(input.url, cachedResponse);
+      } catch (error) {
+        console.error("Failed to add to the cache", input.url, error);
+      }
 
       const cachedStart = Date.now();
       const cached = await cache.match(input.url);
