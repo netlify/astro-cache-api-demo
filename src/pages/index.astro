@@ -19,7 +19,7 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
   <label for="location-input" class="astro-label" style="font-size:1.25rem;font-family:'Space Mono',monospace;font-weight:700;margin-bottom:0.1rem;">What's your location, astronaut?</label>
   <div style="display:flex;align-items:center;gap:0.7rem;width:100%;">
     <input id="location-input" class="astro-input wide-input big-coord-input" type="text" placeholder="Netlify HQ" autocomplete="off" />
-    <button type="button" id="geo-btn" class="astro-geolocate-btn small-geo-btn" title="Use my location" aria-label="Get current location">
+    <button type="button" id="geo-btn" style="min-width: 80px" class="astro-geolocate-btn small-geo-btn" title="Use my location" aria-label="Get current location">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg>
     </button>
     <div class="input-glow"></div>
@@ -1033,8 +1033,8 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
 		opacity: 0.98;
 	}
 	.wide-form-section {
-		width: 600px;
-		max-width: 95vw;
+		width: 100%;
+		max-width: 600px;
 		box-sizing: border-box;
 		margin-left: auto;
 		margin-right: auto;
@@ -1042,8 +1042,6 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
 		flex-direction: column;
 	}
 	.form.wide-form-section {
-		width: 600px;
-		max-width: 95vw;
 		box-sizing: border-box;
 		margin-left: auto;
 		margin-right: auto;
