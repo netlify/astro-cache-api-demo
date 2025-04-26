@@ -391,27 +391,32 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
 			addTerminalLine("", "break");
 			addTerminalLine("", "break");
 
+			let duration1: HTMLElement
+			let duration2: HTMLElement
+
 			addTerminalLine(`No cache`, 'input');
-			const progress1 = addTerminalProgressBar(100, durations.uncached);
+			const progress1 = addTerminalProgressBar(100, durations.uncached).then(() => {
+				duration1.textContent = `${durations.uncached}ms`
+			});
 			
-			const duration1 = addTerminalLine("...", 'text');
+			duration1 = addTerminalLine("...", 'text');
 			addTerminalLine("", "break");
 
 			const percentage = ((durations.cached * 100) / durations.uncached) || 1
 
 			addTerminalLine(`With Cache API`, 'input');
-			const progress2 = addTerminalProgressBar(percentage, durations.cached)
+			const progress2 = addTerminalProgressBar(percentage, durations.cached).then(() => {
+				duration2.textContent = `${durations.cached}ms`;
+			})
 			
-			const duration2 = addTerminalLine("...", 'text');
+			duration2 = addTerminalLine("...", 'text');
 			addTerminalLine("", "break");
 
 			const deltaEl = addTerminalLine(" ", 'input');
 
 			await progress1;
-			duration1.textContent = `${durations.uncached}ms`
-
 			await progress2;
-			duration2.textContent = `${durations.cached}ms`
+			
 
 			const delta = Math.round(durations.uncached / durations.cached);
 			deltaEl.textContent = `Lift off ~${delta} times faster! 🚀`
