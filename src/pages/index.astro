@@ -392,7 +392,7 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
 				}
 			})
 
-			await fetchData("https://api.le-systeme-solaire.net/rest/bodies/", durations, (data) => {
+			await fetchData("https://space-bodies-api.deno.dev", durations, (data) => {
 				let body: any
 
 				if (destination) {
