@@ -26,7 +26,7 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
   </div>
 </div>
   <div class="buttons">
-    <button id="fetch-btn" class="primary">Generate mission data</button>
+    <button id="fetch-btn" class="primary">Generate mission</button>
   </div>
 </div>
 		<div id="ship-console" class="terminal">
@@ -49,7 +49,7 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
 
 <!-- Mission Data Section -->
 <section class="mission-data-section">
-  <h2 class="mission-title">Mission data</h2>
+  <h2 class="mission-title">Your mission</h2>
   <div class="mission-panels">
     <!-- Launch Location -->
     <div class="mission-panel">
@@ -82,7 +82,7 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
     <!-- ISS Data -->
     <div class="mission-panel">
       <h3 class="mission-panel-title">🛰️ International Space Station</h3>
-      <div class="mission-panel-subtitle">Pit stop for coffee and chat?</div>
+      <div class="mission-panel-subtitle">Pit stop for coffee</div>
       <ul class="mission-list">
         <li><span class="mission-label">Latitude:</span> <span class="mission-value" data-key="latitude"></span></li>
         <li><span class="mission-label">Longitude:</span> <span class="mission-value" data-key="longitude"></span></li>
@@ -260,7 +260,7 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
 			durations.cached += res.data?.duration?.cached;
 			durations.uncached += res.data?.duration?.uncached;
 
-			if (!res.data.error) {
+			if (!res.data?.error) {
 				missionData = {
 					...missionData,
 					...dataMapper(res.data)
