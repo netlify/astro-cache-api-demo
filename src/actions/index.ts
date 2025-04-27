@@ -56,24 +56,43 @@ export const server = {
         console.error("Failed to read cache", input.url, error);
       }
 
-      // For a fair benchmark, discard the duration if we had a cache miss.
+      // If it's a cache miss, we can't use the duration of the lookup request,
+      // so we use the duration of the uncached call.
       const cachedDuration = cached
         ? Date.now() - cachedStart
         : uncachedDuration;
 
-      await cached?.json();
+      try {
+        await cached?.json();
+      } catch (error) {
+        console.error("Failed to read cached response", input.url, error);
+      }
 
-      const data = await res.json();
+      let data = {};
 
-      console.log("Returning data", input.url);
+      try {
+        data = await res.json();
 
-      return {
-        duration: {
-          cached: cachedDuration,
-          uncached: uncachedDuration
-        },
-        ...data
-      };
+        console.log("Returning data", input.url);
+
+        return {
+          duration: {
+            cached: cachedDuration,
+            uncached: uncachedDuration
+          },
+          ...data
+        };
+      } catch (error) {
+        console.error("Failed to fresh response body", input.url, error);
+
+        return {
+          duration: {
+            cached: cachedDuration,
+            uncached: uncachedDuration
+          },
+          error: true
+        };
+      }
     }
   })
 };
