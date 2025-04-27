@@ -64,7 +64,7 @@ export const server = {
         : uncachedDuration;
 
       try {
-        await cached?.json();
+        // await cached?.json();
       } catch (error) {
         console.error("Failed to read cached response", input.url, error);
       }
