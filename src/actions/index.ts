@@ -41,8 +41,10 @@ export const server = {
           ttl: 2 * HOUR
         });
 
-        const putRes = await cache.put(input.url, cachedResponse);
-        await putRes.text();
+        await cache.put(input.url, cachedResponse);
+        await new Promise((resolve) => {
+          setTimeout(resolve, 500);
+        });
       } catch (error) {
         console.error("Failed to add to cache", input.url, error);
       }
