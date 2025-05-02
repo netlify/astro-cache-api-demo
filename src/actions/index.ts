@@ -1,8 +1,6 @@
 import { defineAction } from "astro:actions";
 import { z } from "astro:schema";
 
-import { setCacheHeaders, HOUR } from "@netlify/cache";
-
 export const server = {
   fetch: defineAction({
     input: z.object({
@@ -21,7 +19,7 @@ export const server = {
           throw new Error("Unexpected status code");
         }
       } catch (error) {
-        console.error("Failed to fetch", input.url, error);
+        console.error(`Failed to fetch ${input.url}:`, error);
 
         const duration = Date.now() - uncachedStart;
 
@@ -35,29 +33,18 @@ export const server = {
       }
 
       const uncachedDuration = Date.now() - uncachedStart;
+      const data = await res.json();
 
-      try {
-        const cachedResponse = setCacheHeaders(res.clone(), {
-          ttl: 2 * HOUR
-        });
-
-        await cache.put(input.url, cachedResponse);
-        await new Promise((resolve) => {
-          setTimeout(resolve, 500);
-        });
-      } catch (error) {
-        console.error("Failed to add to cache", input.url, error);
-      }
+      const cachedResponse = Response.json(data, {
+        headers: {
+          "Cache-Control": "public,s-maxage=3600"
+        }
+      });
+      await cache.put(input.url, cachedResponse);
 
       const cachedStart = Date.now();
 
-      let cached: Response | undefined;
-
-      try {
-        cached = await cache.match(input.url);
-      } catch (error) {
-        console.error("Failed to read cache", input.url, error);
-      }
+      const cached = await cache.match(input.url);
 
       // If it's a cache miss, we can't use the duration of the lookup request,
       // so we use the duration of the uncached call.
@@ -65,37 +52,13 @@ export const server = {
         ? Date.now() - cachedStart
         : uncachedDuration;
 
-      try {
-        // await cached?.json();
-      } catch (error) {
-        console.error("Failed to read cached response", input.url, error);
-      }
-
-      let data = {};
-
-      try {
-        data = await res.json();
-
-        console.log("Returning data", input.url);
-
-        return {
-          duration: {
-            cached: cachedDuration,
-            uncached: uncachedDuration
-          },
-          ...data
-        };
-      } catch (error) {
-        console.error("Failed to fresh response body", input.url, error);
-
-        return {
-          duration: {
-            cached: cachedDuration,
-            uncached: uncachedDuration
-          },
-          error: true
-        };
-      }
+      return {
+        duration: {
+          cached: cachedDuration,
+          uncached: uncachedDuration
+        },
+        ...data
+      };
     }
   })
 };
