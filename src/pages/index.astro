@@ -213,7 +213,7 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
       );
     });
 
-    function addTerminalLine(text: string, type: 'text' | 'input' | 'output' | 'error' | 'blink' | 'break' = 'text') {
+    function addTerminalLine(text: string, type: 'text' | 'input' | 'output' | 'error' | 'break' = 'text') {
       const line = document.createElement('div');
       line.className = `terminal-line ${type}`;
       line.textContent = text;
@@ -253,7 +253,10 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
 			})
 		};
 
-		async function fetchData(url: string, durations: {cached: number, uncached: number}, dataMapper: (data: any) => Record<string, string>) {
+		async function fetchData(urls: string | string[], durations: {cached: number, uncached: number}, dataMapper: (data: any) => Record<string, string>) {
+			const urlArray = Array.isArray(urls) ? urls : [urls]
+			const [url] = urlArray
+
 			addTerminalLine("", "break");
 			addTerminalLine(`> Fetching "${url}"...`, 'output');
 
@@ -276,6 +279,10 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
 			console.log("Error in fetch:", res.error, res.data)
 
 			addTerminalLine(`Resource is unavailable`, "error");
+
+			if (urlArray.length > 1) {
+				return fetchData(urlArray.slice(1), durations, dataMapper)
+			}
 		}
 
 		function parseCoordinates(value: string) {
@@ -394,7 +401,7 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
 				}
 			})
 
-			await fetchData("https://space-bodies-api.deno.dev", durations, (data) => {
+			await fetchData(["https://api.le-systeme-solaire.net/rest/bodies/", "https://space-bodies-api.deno.dev"], durations, (data) => {
 				let body: any
 
 				if (destination) {
@@ -451,7 +458,7 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
 				duration2.textContent = `${durations.cached}ms`;
 			})
 			
-			duration2 = addTerminalLine("...", 'blink');
+			duration2 = addTerminalLine("...", 'text');
 			addTerminalLine("", "break");
 
 			const deltaEl = addTerminalLine(" ", 'input');
@@ -492,25 +499,30 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
 				(el as HTMLElement).style.minWidth = tempSpan.offsetWidth + 'px';
 				document.body.removeChild(tempSpan);
 				// If the value contains HTML (like <sup>), use a temp element
-				let chars: Array<{text: string}> = [];
+				let chars: Array<{text: string, html: boolean}> = [];
 				if (raw.includes('<')) {
 					// Parse HTML string into text and tags
 					let temp = document.createElement('div');
 					temp.innerHTML = raw;
 					function walk(node: Node) {
-						chars.push({text: node.textContent || ''});
+						if (node.nodeType === Node.TEXT_NODE) {
+							chars.push({text: node.textContent || '', html: false});
+						} else if (node.nodeType === Node.ELEMENT_NODE) {
+							chars.push({text: (node as HTMLElement).outerHTML, html: true});
+						}
 					}
 					temp.childNodes.forEach(walk);
 				} else {
-					chars = raw.split('').map((c: string) => ({text: c}));
+					chars = raw.split('').map((c: string) => ({text: c, html: false}));
 				}
-				const space = "&nbsp;"
-				el.innerHTML = space.repeat(raw.length);
 				let i = 0;
 				function typeChar() {
 					if (i < chars.length) {
-						const newChar = chars[i].text.replace(/ /g, '&nbsp;');
-						el.innerHTML = el.innerHTML.replace(space, newChar);
+						if (chars[i].html) {
+							el.innerHTML += chars[i].text;
+						} else {
+							el.innerHTML += chars[i].text.replace(/ /g, '&nbsp;');
+						}
 						i++;
 						setTimeout(typeChar, 22);
 					}
@@ -540,16 +552,6 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
 	.dtn {
 		display: block;
 		margin-top: 30px;
-	}
-
-	.blink {
-		animation: blinker 1s linear infinite;
-	}
-
-	@keyframes blinker {
-		50% {
-			opacity: 0;
-		}
 	}
 
   .fancy-input-wrapper {
@@ -1317,4 +1319,3 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
     max-width: 100%;
   }
 }
-
