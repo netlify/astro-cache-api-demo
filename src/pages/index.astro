@@ -330,9 +330,9 @@ import AnimatedHeader from '../components/AnimatedHeader.astro';
 
 			if (!userCoordinates && locationInput.value && locationInput.value.toLowerCase() !== "netlify hq") {
 				await fetchData(`https://geocoding-api.open-meteo.com/v1/search?name=${locationInput.value}&count=1&language=en&format=json`, durations, (data) => {
-					const [result] = data?.results;
-
-					if (result) {
+					if (data?.results?.length) {
+						const [result] = data.results;
+						
 						launchLocation = result.country;
 
 						userCoordinates = {
