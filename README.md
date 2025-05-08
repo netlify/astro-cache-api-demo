@@ -1,48 +1,39 @@
-# Astro Starter Kit: Basics
+# 🚀 Netlify Cache API demo
 
-```sh
-npm create astro@latest -- --template basics
+> 🌎 Houston, we have caching! 🛸
+
+[![Space GIF](astronaut.gif)](https://giphy.com/gifs/cartoon-3d-astronaut-VOgpnDOAddaN0zr9UE)
+
+## 🌟 Mission Briefing
+
+Welcome, space explorer! This cosmic project demonstrates the power of Netlify's Cache API with Astro. Get ready for a journey through the stars of web development! ✨
+
+## 🛠 Ground Control Setup
+
+First, install the dependencies for your space mission:
+
+```bash
+npm install
 ```
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/withastro/astro/tree/latest/examples/basics)
-[![Open with CodeSandbox](https://assets.codesandbox.io/github/button-edit-lime.svg)](https://codesandbox.io/p/sandbox/github/withastro/astro/tree/latest/examples/basics)
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/withastro/astro?devcontainer_path=.devcontainer/basics/devcontainer.json)
+## 🌍 Launch Local Development Server
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+Fire up your rockets with:
 
-![just-the-basics](https://github.com/withastro/astro/assets/2244813/a0a5533c-a856-4198-8470-2d67b1d7c554)
-
-## 🚀 Project Structure
-
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
-/
-├── public/
-│   └── favicon.svg
-├── src/
-│   ├── layouts/
-│   │   └── Layout.astro
-│   └── pages/
-│       └── index.astro
-└── package.json
+```bash
+npm run dev
 ```
 
-To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
+Your mission control center will be available at `http://localhost:3000` 🎮
 
-## 🧞 Commands
+## 🌌 Deploy to Netlify
 
-All commands are run from the root of the project, from a terminal:
+Ready to launch your project into the vast expanse of the internet? Click this shiny button:
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+<a class="dtn" href="https://app.netlify.com/start/deploy?repository=https://github.com/netlify/astro-cache-api-demo"><img src="https://www.netlify.com/img/deploy/button.svg" alt="Deploy to Netlify"></a>
 
-## 👀 Want to learn more?
+## 🌠 Explore
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+Congratulations, cosmic developer! Your site is now orbiting in the Netlify constellation. 🎉
+
+_Over and out!_ 👨‍🚀
